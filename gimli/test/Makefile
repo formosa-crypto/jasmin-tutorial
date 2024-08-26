@@ -22,7 +22,7 @@ TEST_HEADERS ::= \
 CC ::= gcc
 CFLAGS ::= \
 	-Wall -Wextra -Werror -Wpedantic -Wunreachable-code -Wconversion -Wshadow \
-	-Warith-conversion -g -O1
+	-Warith-conversion -g -O3
 CINCLUDE ::= -I $(REF_DIR) -I $(JAZZ_DIR)
 CCOMPILE ::= $(CC) $(CINCLUDE) $(CFLAGS)
 
@@ -31,7 +31,7 @@ OUT ::= out.o
 TESTN ?= 0
 
 JASMINC ?= jasminc
-JASMIN_FLAGS += -g
+JASMIN_FLAGS +=
 
 VALGRIND ?= valgrind
 VALGRIND_FLAGS += \
@@ -53,7 +53,7 @@ $(JAZZ_ASM): $(JAZZ_SOURCES)
 	$(JASMINC) $(JASMIN_FLAGS) $(JAZZ_MAIN) -o $(JAZZ_ASM)
 
 clean:
-	rm $(OUT) $(JAZZ_ASM)
+	rm -f $(OUT) $(JAZZ_ASM)
 
 all: $(OUT)
 
@@ -63,5 +63,5 @@ lint:
 run: $(SOURCES) $(HEADERS) $(JAZZ_ASM) $(OUT)
 	./$(OUT) $(TESTN)
 
-valgrind:
+valgrind: $(OUT)
 	$(VALGRIND) $(VALGRIND_FLAGS) ./$(OUT) $(TESTN)

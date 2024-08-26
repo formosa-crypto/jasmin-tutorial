@@ -36,22 +36,21 @@ fn sbox3(reg u32 x y z) -> reg u32 {
 fn sbox(reg ptr u32[12] state, reg u64 column) -> reg ptr u32[12] {
     reg u32 x y z a;
 
-    x = state[(int)column];
+    x = state[0 + column];
     x <<r= 24;
-    y = state[column + 4];
+
+    y = state[4 + column];
     y <<r= 9;
-    z = state[column + 8];
+
+    z = state[8 + column];
 
     a = sbox1(x, y, z);
-
     state[8 + column] = a;
 
     a = sbox2(x, y, z);
-
     state[4 + column] = a;
 
     a = sbox3(x, y, z);
-
     state[0 + column] = a;
 
     return state;

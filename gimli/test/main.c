@@ -3,7 +3,7 @@
 
 #include "test.h"
 
-#define ITERATIONS 1000
+#define ITERATIONS 10000
 
 void print_help(char *name) {
   printf("Run tests for Mayo.\n");

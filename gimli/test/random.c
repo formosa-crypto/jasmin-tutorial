@@ -1,4 +1,6 @@
+#include <assert.h>
 #include <inttypes.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #if RAND_MAX / 256 >= 0xFFFFFFFFFFFFFF
@@ -17,7 +19,7 @@ uint8_t rand_uint8() { return (uint8_t)rand(); }
 
 uint8_t rand_uint8_between(uint8_t lo, uint8_t hi) {
   uint8_t x = rand_uint8();
-  while (x < lo || x > hi) {
+  while (x < lo || x >= hi) {
     x = rand_uint8();
   }
   return x;
@@ -32,25 +34,42 @@ uint64_t rand_uint64(void) {
 }
 
 uint64_t rand_uint64_between(uint64_t lo, uint64_t hi) {
-  uint64_t x = rand_uint64();
-  while (x < lo || x > hi) {
-    x = rand_uint64();
+  assert(lo <= hi);
+
+  uint64_t len = hi - lo;
+  uint64_t mask = 1;
+  while ((len & mask) != len) {
+    mask = (mask << 1) + 1;
   }
-  return x;
+
+  uint64_t x = rand_uint64() & mask;
+  while (x >= len) {
+    x = rand_uint64() & mask;
+  }
+  return x + lo;
 }
 
 uint32_t rand_uint32(void) { return (uint32_t)rand_uint64(); }
 
 uint32_t rand_uint32_between(uint32_t lo, uint32_t hi) {
-  uint32_t x = rand_uint32();
-  while (x < lo || x > hi) {
-    x = rand_uint32();
+  assert(lo <= hi);
+
+  uint32_t len = hi - lo;
+  uint32_t mask = 1;
+  while ((len & mask) != len) {
+    mask = (mask << 1) + 1;
   }
-  return x;
+
+  uint32_t x = rand_uint32() & mask;
+  while (x >= len) {
+    x = rand_uint32() & mask;
+  }
+  return x + lo;
 }
 
-void rand_fill_uint8(uint8_t *a, uint64_t n) {
+void rand_fill(void *a, uint64_t n) {
+  uint8_t *p = (uint8_t *)a;
   for (uint64_t i = 0; i < n; i++) {
-    a[i] = rand_uint8();
+    p[i] = rand_uint8();
   }
 }
