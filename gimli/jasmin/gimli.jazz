@@ -1,0 +1,126 @@
+fn sbox1(reg u32 x y z) -> reg u32 {
+    reg u32 a b c;
+    a = x;
+    b = z;
+    b <<= 1;
+    c = y;
+    c &= z;
+    c <<= 2;
+    a ^= b;
+    a ^= c;
+    return a;
+}
+
+fn sbox2(reg u32 x y z) -> reg u32 {
+    reg u32 a b;
+    a = y;
+    b = x;
+    b |= z;
+    b <<= 1;
+    a ^= x;
+    a ^= b;
+    return a;
+}
+
+fn sbox3(reg u32 x y z) -> reg u32 {
+    reg u32 a b;
+    a = z;
+    b = x;
+    b &= y;
+    b <<= 3;
+    a ^= y;
+    a ^= b;
+    return a;
+}
+
+fn sbox(reg ptr u32[12] state, reg u64 column) -> reg ptr u32[12] {
+    reg u32 x y z a;
+
+    x = state[(int)column];
+    x <<r= 24;
+    y = state[column + 4];
+    y <<r= 9;
+    z = state[column + 8];
+
+    a = sbox1(x, y, z);
+
+    state[8 + column] = a;
+
+    a = sbox2(x, y, z);
+
+    state[4 + column] = a;
+
+    a = sbox3(x, y, z);
+
+    state[0 + column] = a;
+
+    return state;
+}
+
+fn small_swap(reg ptr u32[12] state) -> reg ptr u32[12] {
+    reg u32 x y;
+    x = state[0];
+    y = state[1];
+    state[0] = y;
+    state[1] = x;
+
+    x = state[2];
+    y = state[3];
+    state[2] = y;
+    state[3] = x;
+    return state;
+}
+
+fn big_swap(reg ptr u32[12] state) -> reg ptr u32[12] {
+    reg u32 x y;
+    x = state[0];
+    y = state[2];
+    state[0] = y;
+    state[2] = x;
+
+    x = state[1];
+    y = state[3];
+    state[1] = y;
+    state[3] = x;
+    return state;
+}
+
+fn gimli(reg ptr u32[12] state) -> reg ptr u32[12] {
+    reg u32 round;
+    round = 24;
+    while (round > 0) {
+
+        reg u64 column;
+        column = 0;
+        while (column < 4) {
+            state = sbox(state, column);
+            column += 1;
+        }
+
+        reg u32 four round_mod_4;
+        four = 4;
+        round_mod_4 = round;
+        round_mod_4 %= four;
+
+        if (round_mod_4 == 0) { // small swap: pattern s...s...s...
+            state = small_swap(state);
+        }
+
+        if (round_mod_4 == 2) { // big swap: pattern ..S...S...S...
+            state = big_swap(state);
+        }
+
+        if (round_mod_4 == 0) { // add constant: pattern c...c...c...
+            reg u64 tmp64;
+            tmp64 = (64u)round;
+            tmp64 += 0x9e377900;
+            reg u32 tmp32;
+            tmp32 = (32u)tmp64;
+            state[0] ^= tmp32;
+        }
+
+        round -= 1;
+    }
+
+    return state;
+}
