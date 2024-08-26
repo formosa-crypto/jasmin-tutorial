@@ -1,0 +1,37 @@
+export
+fn strlen_ct(reg u64 s) -> reg u64 {
+    reg u64 i;
+    i = 0;
+    reg bool b;
+    while {
+        reg u8 c;
+        c = (u8)[s + i];
+        #declassify b = c != 0;
+    } (b) {
+        i += 1;
+    }
+
+    return i;
+}
+
+
+export
+fn strlen_sct(reg u64 s) -> reg u64 {
+    reg u64 msf;
+    msf = #init_msf();
+
+    reg u64 i;
+    i = 0;
+    reg bool b;
+    while {
+        reg u8 c;
+        c = (u8)[s + i];
+        c = #protect_8(c, msf);
+        #declassify b = c != 0;
+    } (b) {
+        msf = #update_msf(b, msf);
+        i += 1;
+    }
+
+    return i;
+}

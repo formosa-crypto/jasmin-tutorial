@@ -1,0 +1,29 @@
+param int N = 16;
+
+export
+fn otp_fixed(reg ptr u8[N] ct msg key) -> reg ptr u8[N] {
+    reg u64 i;
+    i = 0;
+    while (i < N) {
+        reg u8 c;
+        c = key[i];
+        c ^= msg[i];
+        ct[i] = c;
+        i += 1;
+    }
+    return ct;
+}
+
+export
+fn strlen(reg u64 s) -> reg u64 {
+    reg u64 i;
+    i = 0;
+    reg u8 c;
+    while {
+        c = (u8)[s + i];
+    } (c != 0) {
+        i += 1;
+    }
+
+    return i;
+}
