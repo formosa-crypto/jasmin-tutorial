@@ -44,12 +44,15 @@ fn sbox(reg ptr u32[12] state, reg u64 column) -> reg ptr u32[12] {
 
     z = state[8 + column];
 
+    #inline
     a = sbox1(x, y, z);
     state[8 + column] = a;
 
+    #inline
     a = sbox2(x, y, z);
     state[4 + column] = a;
 
+    #inline
     a = sbox3(x, y, z);
     state[0 + column] = a;
 
@@ -85,40 +88,30 @@ fn big_swap(reg ptr u32[12] state) -> reg ptr u32[12] {
 }
 
 fn gimli(reg ptr u32[12] state) -> reg ptr u32[12] {
-    reg u32 round;
-    round = 24;
-    while (round > 0) {
+    inline int round;
+    for round = 24 downto 0 {
+        inline int column;
+        for column = 0 to 4 {
+            reg u64 tmp;
+            tmp = column;
 
-        reg u64 column;
-        column = 0;
-        while (column < 4) {
-            state = sbox(state, column);
-            column += 1;
+            #inline
+            state = sbox(state, tmp);
         }
 
-        reg u32 four round_mod_4;
-        four = 4;
-        round_mod_4 = round;
-        round_mod_4 %= four;
-
-        if (round_mod_4 == 0) { // small swap: pattern s...s...s...
+        if (round % 4 == 0) { // small swap: pattern s...s...s...
+            #inline
             state = small_swap(state);
         }
 
-        if (round_mod_4 == 2) { // big swap: pattern ..S...S...S...
+        if (round % 4 == 2) { // big swap: pattern ..S...S...S...
+            #inline
             state = big_swap(state);
         }
 
-        if (round_mod_4 == 0) { // add constant: pattern c...c...c...
-            reg u64 tmp64;
-            tmp64 = (64u)round;
-            tmp64 += 0x9e377900;
-            reg u32 tmp32;
-            tmp32 = (32u)tmp64;
-            state[0] ^= tmp32;
+        if (round % 4 == 0) { // add constant: pattern c...c...c...
+            state[0] ^= round + 0x9e377900;
         }
-
-        round -= 1;
     }
 
     return state;
