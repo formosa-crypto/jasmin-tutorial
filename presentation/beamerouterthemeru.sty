@@ -1,0 +1,136 @@
+%%
+%% This is file `beamerouterthemeru.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% beamerouterthemeru.dtx  (with options: `package')
+%% ---------------------------------------------------------------------------
+%% Copyright 2016 Benoit Viguier
+%% 
+%% https://gitlab.science.ru.nl/benoit/rutheme
+%% 
+%% the original template was based on the mtheme
+%% (https://github.com/matze/mtheme) by Matthias Vogelgesang
+%% 
+%% This work is licensed under a Creative Commons Attribution-ShareAlike 4.0
+%% International License (https://creativecommons.org/licenses/by-sa/4.0/).
+%% ---------------------------------------------------------------------------
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{beamerouterthemeru}[2016/03/14 Ru outer theme]
+\RequirePackage{etoolbox}
+\RequirePackage{calc}
+\RequirePackage{pgfopts}
+\pgfkeys{
+  /ru/outer/numbering/.cd,
+    .is choice,
+    none/.code=\setbeamertemplate{frame numbering}[none],
+    counter/.code=\setbeamertemplate{frame numbering}[counter],
+    fraction/.code=\setbeamertemplate{frame numbering}[fraction],
+}
+\pgfkeys{
+  /ru/outer/progressbar/.cd,
+    .is choice,
+    none/.code={%
+      \setbeamertemplate{headline}[plain]
+      \setbeamertemplate{frametitle}[plain]
+      \setbeamertemplate{footline}[plain]
+    },
+    head/.code={\pgfkeys{/ru/outer/progressbar=none}
+      \addtobeamertemplate{headline}{}{%
+        \usebeamertemplate*{progress bar in head/foot}
+      }
+    },
+    frametitle/.code={\pgfkeys{/ru/outer/progressbar=none}
+      \addtobeamertemplate{frametitle}{}{%
+        \usebeamertemplate*{progress bar in head/foot}
+      }
+    },
+    foot/.code={\pgfkeys{/ru/outer/progressbar=none}
+      \addtobeamertemplate{footline}{}{%
+        \usebeamertemplate*{progress bar in head/foot}%
+      }
+    },
+}
+\newcommand{\ru@outer@setdefaults}{
+  \pgfkeys{/ru/outer/.cd,
+    numbering=counter,
+    progressbar=frametitle,
+  }
+}
+\setbeamertemplate{navigation symbols}{}
+\defbeamertemplate{frame footer}{none}{}
+\defbeamertemplate{frame footer}{custom}[1]{ #1 }
+\defbeamertemplate{frame numbering}{none}{}
+\defbeamertemplate{frame numbering}{counter}{\insertframenumber}
+\defbeamertemplate{frame numbering}{fraction}{\insertframenumber/\inserttotalframenumber}
+\defbeamertemplate{headline}{plain}{}
+\defbeamertemplate{footline}{plain}{%
+  \begin{beamercolorbox}[wd=\textwidth, sep=3ex]{footline}%
+    \usebeamerfont{page number in head/foot}%
+    \usebeamertemplate*{frame footer}
+    \hfill%
+    \usebeamertemplate*{frame numbering}
+  \end{beamercolorbox}%
+}
+\newlength{\ru@frametitle@padding}
+\newlength{\ru@frametitle@paddingleft}
+\setlength{\ru@frametitle@padding}{1.5ex}
+\setlength{\ru@frametitle@paddingleft}{2.2ex}
+\newcommand{\ru@frametitlestrut@start}{
+  \rule{0pt}{\ru@frametitle@padding +%
+    \totalheightof{%
+      \ifcsdef{ru@frametitleformat}{\ru@frametitleformat X}{X}%
+    }%
+  }%
+}
+\newcommand{\ru@frametitlestrut@end}{
+  \rule[-\ru@frametitle@padding]{0pt}{\ru@frametitle@padding}
+}
+\defbeamertemplate{frametitle}{plain}{%
+  \nointerlineskip%
+  \begin{beamercolorbox}[%
+      wd=\paperwidth,%
+      sep=0pt,%
+      leftskip=\ru@frametitle@paddingleft,%
+      rightskip=\ru@frametitle@padding,%
+    ]{frametitle}%
+  \ru@frametitlestrut@start%
+  \insertframetitle%
+  \nolinebreak%
+  \ru@frametitlestrut@end%
+  \end{beamercolorbox}%
+}
+\setbeamertemplate{frametitle continuation}{%
+  \usebeamerfont{frametitle}
+  \romannumeral \insertcontinuationcount
+}
+\newlength{\ru@progressinheadfoot}
+\newlength{\ru@progressinheadfoot@linewidth}
+\setlength{\ru@progressinheadfoot@linewidth}{1.4pt}
+\setbeamertemplate{progress bar in head/foot}{
+  \nointerlineskip
+  \setlength{\ru@progressinheadfoot}{%
+    \paperwidth * \ratio{\insertframenumber pt}{\inserttotalframenumber pt}%
+  }%
+  \begin{beamercolorbox}[wd=\paperwidth]{progress bar in head/foot}
+    \begin{tikzpicture}
+      \fill[bg] (0,0) rectangle (\paperwidth, \ru@progressinheadfoot@linewidth);
+      \fill[fg] (0,0) rectangle (\ru@progressinheadfoot, \ru@progressinheadfoot@linewidth);
+    \end{tikzpicture}%
+  \end{beamercolorbox}
+}
+\AtBeginDocument{%
+  \apptocmd{\appendix}{%
+    \pgfkeys{%
+      /ru/outer/.cd,
+      numbering=none,
+      progressbar=none}
+    }{}{}
+}
+\ru@outer@setdefaults
+\ProcessPgfPackageOptions{/ru/outer}
+
+\endinput
+%%
+%% End of file `beamerouterthemeru.sty'.

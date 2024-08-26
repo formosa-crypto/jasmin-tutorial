@@ -1,0 +1,112 @@
+%%
+%% This is file `beamerthemeru.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% beamerthemeru.dtx  (with options: `package')
+%% ---------------------------------------------------------------------------
+%% Copyright 2016 Benoit Viguier
+%% 
+%% https://gitlab.science.ru.nl/benoit/rutheme
+%% 
+%% the original template was based on the mtheme
+%% (https://github.com/matze/mtheme) by Matthias Vogelgesang
+%% 
+%% This work is licensed under a Creative Commons Attribution-ShareAlike 4.0
+%% International License (https://creativecommons.org/licenses/by-sa/4.0/).
+%% ---------------------------------------------------------------------------
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{beamerthemeru}
+  [2016/11/22 v0.1 Ru Beamer theme]
+\RequirePackage{etoolbox}
+\RequirePackage{pgfopts}
+\pgfkeys{/ru/.cd,
+  .search also={
+    /ru/inner,
+    /ru/outer,
+    /ru/color,
+    /ru/font,
+  }
+}
+\pgfkeys{
+  /ru/titleformat plain/.cd,
+    .is choice,
+    regular/.code={%
+      \let\ru@plaintitleformat\@empty%
+      \setbeamerfont{standout}{shape=\normalfont}%
+    },
+    smallcaps/.code={%
+      \let\ru@plaintitleformat\@empty%
+      \setbeamerfont{standout}{shape=\scshape}%
+    },
+    allsmallcaps/.code={%
+      \let\ru@plaintitleformat\MakeLowercase%
+      \setbeamerfont{standout}{shape=\scshape}%
+      \PackageWarning{beamerthemeru}{%
+        Be aware that titleformat plain=allsmallcaps can lead to problems%
+      }
+    },
+    allcaps/.code={%
+      \let\ru@plaintitleformat\MakeUppercase%
+      \setbeamerfont{standout}{shape=\normalfont}%
+      \PackageWarning{beamerthemeru}{%
+        Be aware that titleformat plain=allcaps can lead to problems%
+      }
+    },
+}
+\pgfkeys{
+  /ru/titleformat/.code=\pgfkeysalso{
+      font/titleformat title=#1,
+      font/titleformat subtitle=#1,
+      font/titleformat section=#1,
+      font/titleformat frame=#1,
+      titleformat plain=#1,
+    }
+}
+\pgfkeys{/ru/.cd,
+  usetitleprogressbar/.code=\pgfkeysalso{outer/progressbar=frametitle},
+  noslidenumbers/.code=\pgfkeysalso{outer/numbering=none},
+  usetotalslideindicator/.code=\pgfkeysalso{outer/numbering=fraction},
+  nosectionslide/.code=\pgfkeysalso{inner/sectionpage=none},
+  darkcolors/.code=\pgfkeysalso{color/background=dark},
+  blockbg/.code=\pgfkeysalso{color/block=fill, inner/block=fill},
+}
+\newcommand{\ru@setdefaults}{
+  \pgfkeys{/ru/.cd,
+    titleformat plain=regular,
+  }
+}
+\useinnertheme{ru}
+\useoutertheme{ru}
+\usecolortheme{ru}
+\usefonttheme{ru}
+\AtEndPreamble{%
+  \@ifpackageloaded{pgfplots}{%
+    \RequirePackage{pgfplotsthemetol}
+  }{}
+}
+\newcommand{\ruset}[1]{\pgfkeys{/ru/.cd,#1}}
+\def\ru@plaintitleformat#1{#1}
+\newcommand{\plain}[2][]{%
+  \PackageWarning{beamerthemeru}{%
+    The syntax `\plain' may be deprecated in a future version of Metropolis.
+    Please use a frame with [standout] instead.
+  }
+  \begin{frame}[standout]{#1}
+    \ru@plaintitleformat{#2}
+  \end{frame}
+}
+\newcommand{\rureducelistspacing}{\vspace{-\topsep}}
+\ru@setdefaults
+
+%\pgfdeclareimage[width=\paperwidth,height=\paperheight]{bg}{ru_background.png}
+%\setbeamertemplate{background}{\pgfuseimage{bg}}
+%\titlegraphic{\includegraphics[height=1cm]{ru_logo.png}}
+\titlegraphic{\hfill\includegraphics[height=1cm]{mpisp_logo}}
+%\titlegraphic{\hfill\includegraphics[height=1cm]{mpisp_logo}}
+
+\ProcessPgfOptions{/ru}
+\endinput
+%%
+%% End of file `beamerthemeru.sty'.
