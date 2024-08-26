@@ -9,3 +9,4 @@
 *.toc
 *.nav
 *.o
+gimli/test/jazz_gimli.s

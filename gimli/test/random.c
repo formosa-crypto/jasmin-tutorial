@@ -31,10 +31,20 @@ uint64_t rand_uint64(void) {
   return r;
 }
 
-uint8_t rand_uint64_between(uint64_t lo, uint64_t hi) {
+uint64_t rand_uint64_between(uint64_t lo, uint64_t hi) {
   uint64_t x = rand_uint64();
   while (x < lo || x > hi) {
     x = rand_uint64();
+  }
+  return x;
+}
+
+uint32_t rand_uint32(void) { return (uint32_t)rand_uint64(); }
+
+uint32_t rand_uint32_between(uint32_t lo, uint32_t hi) {
+  uint32_t x = rand_uint32();
+  while (x < lo || x > hi) {
+    x = rand_uint32();
   }
   return x;
 }

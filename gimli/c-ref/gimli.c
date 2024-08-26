@@ -27,7 +27,7 @@ uint32_t sbox3(uint32_t x, uint32_t y, uint32_t z) {
 }
 
 
-uint32_t *sbox(uint32_t *state, int column) {
+uint32_t *sbox(uint32_t *state, uint32_t column) {
 	uint32_t x, y, z, a;
 
 	x = rotate(state[column], 24);
@@ -75,11 +75,7 @@ uint32_t *big_swap(uint32_t *state) {
 
 extern void gimli(uint32_t *state)
 {
-  int round;
-  int column;
-  uint32_t x;
-  uint32_t y;
-  uint32_t z;
+  uint32_t round, column;
 
   for (round = 24; round > 0; --round)
   {

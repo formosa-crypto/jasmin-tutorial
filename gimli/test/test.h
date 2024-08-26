@@ -5,7 +5,7 @@
 void init_tests(unsigned int seed);
 
 // Number of tests.
-#define TEST_NUM 1
+#define TEST_NUM 3
 extern char *test_names[TEST_NUM];
 extern int (*test_funcs[TEST_NUM])(void);
 
