@@ -2,52 +2,62 @@ require "gimli.jazz"
 
 export
 fn jazz_sbox1(reg u32 x y z) -> reg u32 {
+    x = x;
+    y = y;
+    z = z;
     reg u32 r;
-    #inline
-    r = sbox1(x, y, z);
+    #inline r = sbox1(x, y, z);
+    r = r;
     return r;
 }
 
 export
 fn jazz_sbox2(reg u32 x y z) -> reg u32 {
+    x = x;
+    y = y;
+    z = z;
     reg u32 r;
-    #inline
-    r = sbox2(x, y, z);
+    #inline r = sbox2(x, y, z);
+    r = r;
     return r;
 }
 
 export
 fn jazz_sbox3(reg u32 x y z) -> reg u32 {
+    x = x;
+    y = y;
+    z = z;
     reg u32 r;
-    #inline
-    r = sbox3(x, y, z);
+    #inline r = sbox3(x, y, z);
+    r = r;
     return r;
 }
 
 export
 fn jazz_sbox(reg ptr u32[12] state, reg u64 column) -> reg ptr u32[12] {
-    #inline
-    state = sbox(state, column);
+    state = state;
+    column = column;
+    #inline state = sbox(state, column);
     return state;
 }
 
 export
 fn jazz_small_swap(reg ptr u32[12] state) -> reg ptr u32[12] {
-    #inline
-    state = small_swap(state);
+    state = state;
+    #inline state = small_swap(state);
     return state;
 }
 
 export
 fn jazz_big_swap(reg ptr u32[12] state) -> reg ptr u32[12] {
-    #inline
-    state = big_swap(state);
+    state = state;
+    #inline state = big_swap(state);
     return state;
 }
 
 export
 fn jazz_gimli(reg ptr u32[12] state) -> reg ptr u32[12] {
-    #inline
-    state = gimli(state);
+    state = state;
+    #inline state = gimli(state);
     return state;
 }
