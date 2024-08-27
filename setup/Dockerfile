@@ -2,7 +2,7 @@
 #  $ docker build -t jasmin101 .
 #  - takes ~6 minutes on ~modern laptop with Intel i7
 
-FROM debian:12.6-slim
+FROM ubuntu:22.04
 
 ARG USERNAME=ches24
 ARG EASYCRYPT_COMMIT=0df85113c4a399990f3f8ed93db5047a8844f8a9
