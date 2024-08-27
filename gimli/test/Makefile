@@ -1,4 +1,4 @@
-REF_DIR ::= ../c-ref/
+REF_DIR ::= ../c/ref/
 REF_SOURCES ::= $(REF_DIR)/gimli.c
 REF_HEADERS ::= $(REF_DIR)/gimli.h
 JAZZ_DIR ::= ../jasmin/
