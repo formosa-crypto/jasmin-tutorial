@@ -1,32 +1,32 @@
-REF_DIR ::= ../c/ref/
-REF_SOURCES ::= $(REF_DIR)/gimli.c
-REF_HEADERS ::= $(REF_DIR)/gimli.h
-JAZZ_DIR ::= ../jasmin/
-JAZZ_MAIN ::= $(JAZZ_DIR)/jazz_gimli.jazz
-JAZZ_SOURCES ::= $(JAZZ_DIR)/gimli.jazz $(JAZZ_MAIN)
-JAZZ_HEADERS ::= $(JAZZ_DIR)/jazz_gimli.h
-JAZZ_ASM ::= jazz_gimli.s
+REF_DIR := ../c/ref
+REF_SOURCES := $(REF_DIR)/gimli.c
+REF_HEADERS := $(REF_DIR)/gimli.h
+JAZZ_DIR := ../jasmin/
+JAZZ_MAIN := $(JAZZ_DIR)/jazz_gimli.jazz
+JAZZ_SOURCES := $(JAZZ_DIR)/gimli.jazz $(JAZZ_MAIN)
+JAZZ_HEADERS := $(JAZZ_DIR)/jazz_gimli.h
+JAZZ_ASM := jazz_gimli.s
 
-SOURCES ::= $(TEST_SOURCES) $(REF_SOURCES) $(JAZZ_SOURCES)
-HEADERS ::= $(TEST_HEADERS) $(REF_HEADERS) $(JAZZ_HEADERS)
+SOURCES := $(TEST_SOURCES) $(REF_SOURCES) $(JAZZ_SOURCES)
+HEADERS := $(TEST_HEADERS) $(REF_HEADERS) $(JAZZ_HEADERS)
 
-TEST_SOURCES ::= \
+TEST_SOURCES := \
 	main.c \
 	random.c \
 	test.c
 
-TEST_HEADERS ::= \
+TEST_HEADERS := \
 	random.h \
 	test.h
 
-CC ::= gcc
-CFLAGS ::= \
+CC := gcc
+CFLAGS := \
 	-Wall -Wextra -Werror -Wpedantic -Wunreachable-code -Wconversion -Wshadow \
 	-Warith-conversion -g -O3
-CINCLUDE ::= -I $(REF_DIR) -I $(JAZZ_DIR)
-CCOMPILE ::= $(CC) $(CINCLUDE) $(CFLAGS)
+CINCLUDE := -I $(REF_DIR) -I $(JAZZ_DIR)
+CCOMPILE := $(CC) $(CINCLUDE) $(CFLAGS)
 
-OUT ::= out.o
+OUT := out.o
 
 TESTN ?= 0
 
