@@ -1,9 +1,9 @@
 # how to build the Docker image:
-#  $ docker build -t episode_v .
+#  $ docker build -t jasmin101 .
 #  - takes ~6 minutes on ~modern laptop with Intel i7
 #
 # how to check proofs:
-#  $ docker run -it episode_v bash
+#  $ docker run -it jasmin101 bash
 #  $ make check
 #  - takes ~60-90 minutes
 #
@@ -16,7 +16,7 @@
 
 FROM debian:12.6-slim
 
-ARG USERNAME=crypto24
+ARG USERNAME=ches24
 ARG EASYCRYPT_COMMIT=0df85113c4a399990f3f8ed93db5047a8844f8a9
 ARG JASMIN_COMMIT=88a932b2bf478345597f75be31ae25e5acefafae # for eclib -- github.com
 ARG JASMIN_COMPILER_COMMIT=v2024.07.0 # for compiler -- corresponding extracted sources on gitlab.com (builds faster)

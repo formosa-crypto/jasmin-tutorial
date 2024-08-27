@@ -3,29 +3,28 @@
 if [ ! "$#" -eq 1 ]; then
 cat <<END
 
- usage:    $ ./build.sh FORMOSA-MLKEM_PATH
+ usage:    $ ./build.sh GIMLI_PATH
 
- example:  if formosa-mlkem and hakyber-internal are in the same directory:
-           $ ./build.sh ../../../formosa-mlkem
+ example:  if gimli and gimli are in the same directory:
+           $ ./build.sh ../../../gimli
 END
   exit
 fi
 
-HAKYBER_INTERNAL_DIR=$(cd "$(dirname "$0")/../../" ; pwd -P)
-HAKYBER_DIR=$(cd "$1"; pwd -P)
+JASMIN101_INTERNAL_DIR=$(cd "$(dirname "$0")/../" ; pwd -P)
+GIMLI_DIR=$(cd "$1"; pwd -P)
 
-TARGET=episode_v
-ARTIFACT_DIR=${HAKYBER_INTERNAL_DIR}/artifact/episode-v
+TARGET=jasmin101
+ARTIFACT_DIR=${JASMIN101_INTERNAL_DIR}/setup
 
 setup_env() {
-
-  DST_DIR=${HAKYBER_INTERNAL_DIR}/${TARGET}
+  DST_DIR=${JASMIN101_INTERNAL_DIR}/${TARGET}
   mkdir -p $DST_DIR
 
   DST_PROOF_DIR=${DST_DIR}/proof
   mkdir -p $DST_PROOF_DIR
 
-  DST_CODE_DIR=${DST_DIR}/code
+  DST_CODE_DIR=${DST_DIR}/gimli
   mkdir -p $DST_CODE_DIR
 
   ECV="0df85113c4a399990f3f8ed93db5047a8844f8a9"
@@ -52,21 +51,19 @@ setup_tools() {
 }
 
 setup_proofs() {
-  cp -r ${HAKYBER_DIR}/proof/* $DST_PROOF_DIR
-  cp ${HAKYBER_DIR}/{Makefile,easycrypt.project} $DST_DIR
-  cp -r ${HAKYBER_DIR}/{config,crypto-specs} $DST_DIR
+  cp -r ${GIMLI_DIR}/proof/* $DST_PROOF_DIR
+  cp ${GIMLI_DIR}/{Makefile,easycrypt.project} $DST_DIR
+  cp -r ${GIMLI_DIR}/{config,crypto-specs} $DST_DIR
 
   # remove non needed
   find ${DST_PROOF_DIR} -type f -not -name "*.ec" -not -name "Makefile" -not -name "*.eca" -exec rm {} \;
 }
 
 setup_code() {
-  cp -r ${HAKYBER_DIR}/code/jasmin $DST_CODE_DIR
-  cp -r ${HAKYBER_DIR}/ext $DST_DIR
-  cp ${HAKYBER_DIR}/code/Makefile.conf $DST_CODE_DIR
-
-  # remove non needed
-  rm -rf $DST_CODE_DIR/jasmin/avx2v $DST_CODE_DIR/jasmin/ref $DST_CODE_DIR/jasmin/test
+  cp -r ${GIMLI_DIR}/jasmin $DST_CODE_DIR
+  cp -r ${GIMLI_DIR}/c $DST_CODE_DIR
+  cp -r ${GIMLI_DIR}/test $DST_CODE_DIR
+  # cp ${GIMLI_DIR}/code/Makefile.conf $DST_CODE_DIR
 }
 
 
@@ -77,7 +74,7 @@ clean() {
 setup_env
 setup_doc
 setup_tools
-setup_proofs
+#setup_proofs
 setup_code
-(cd ${HAKYBER_INTERNAL_DIR} && tar  --exclude="*git*" -cvjf ${TARGET}.tar.bz2 ${TARGET}/)
+(cd ${JASMIN101_INTERNAL_DIR} && tar  --exclude="*git*" -cvjf ${TARGET}.tar.bz2 ${TARGET}/)
 clean
