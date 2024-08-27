@@ -103,3 +103,5 @@ RUN echo "export JASMIN_CT=jasmin-ct" >> /home/$USERNAME/.bashrc
 
 #-- copy the artifact
 COPY --chown=$USERNAME:root ./ ./
+
+RUN rm Dockerfile

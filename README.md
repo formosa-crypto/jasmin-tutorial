@@ -70,7 +70,7 @@ Using these as examples, we will see how:
 Attendees are expected to be familiar with the C programming language.
 
 Additionally, in order to speed-up the setup process, Docker should be [installed](https://www.docker.com/get-started/)
-prior to the tutorial[1].
+prior to the tutorial[1] and the following (Docker) image pulled: [miguelmirq/jasmin101](https://hub.docker.com/repository/docker/miguelmirq/jasmin101).
 
 [1] On ARM-based Macbooks, make sure the following options are set in the Docker settings:
 - General -> Use Virtualization Framework 
