@@ -7,9 +7,6 @@ JAZZ_SOURCES := $(JAZZ_DIR)/gimli.jazz $(JAZZ_MAIN)
 JAZZ_HEADERS := $(JAZZ_DIR)/jazz_gimli.h
 JAZZ_ASM := jazz_gimli.s
 
-SOURCES := $(TEST_SOURCES) $(REF_SOURCES) $(JAZZ_SOURCES)
-HEADERS := $(TEST_HEADERS) $(REF_HEADERS) $(JAZZ_HEADERS)
-
 TEST_SOURCES := \
 	main.c \
 	random.c \
@@ -18,6 +15,9 @@ TEST_SOURCES := \
 TEST_HEADERS := \
 	random.h \
 	test.h
+
+SOURCES := $(TEST_SOURCES) $(REF_SOURCES) $(JAZZ_SOURCES)
+HEADERS := $(TEST_HEADERS) $(REF_HEADERS) $(JAZZ_HEADERS)
 
 CC := gcc
 CFLAGS := \
