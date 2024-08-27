@@ -15,9 +15,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get --quiet --assume-yes update && \
     apt-get --quiet --assume-yes upgrade && \
     apt-get --quiet --assume-yes install apt-utils && \
-    apt-get --quiet --assume-yes install sudo wget build-essential vim gcc clang curl git autoconf m4 time debianutils xz-utils pkg-config python3 python3-pip && \
+    apt-get --quiet --assume-yes install sudo wget build-essential man vim gcc clang curl git autoconf m4 time debianutils xz-utils pkg-config python3 python3-pip && \
     apt-get --quiet --assume-yes install ocaml ocaml-native-compilers camlp4-extra opam && \
-    apt-get --quiet --assume-yes install libgmp-dev libpcre3-dev libicu-dev zlib1g-dev && \
+    apt-get --quiet --assume-yes install libgmp-dev libpcre3-dev libicu-dev zlib1g-dev valgrind && \
     apt-get --quiet --assume-yes clean
 
 RUN ( dpkg --add-architecture amd64 && \
@@ -30,11 +30,13 @@ RUN echo "%sudo  ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/sudoers && \
     chmod 0400 /etc/sudoers.d/sudoers && \
     useradd -ms /bin/bash -d /home/$USERNAME -g root -G sudo -u 1001 $USERNAME
 
+RUN echo y | unminimize
+
 #--
 USER $USERNAME
 WORKDIR /home/$USERNAME
 
-RUN pip3 install --no-cache-dir --break-system-packages pyyaml
+RUN pip3 install --no-cache-dir pyyaml
 
 RUN curl -L https://nixos.org/nix/install > nix-install && \
     sh nix-install && rm nix-install
@@ -45,6 +47,7 @@ ENV ALTERGO_VERSION=2.5.3 CVC4_VERSION=1.8 Z3_VERSION=4.8.17
 ENV OPAMYES=true OPAMVERBOSE=0 OPAMJOBS=4
 
 RUN opam init --disable-sandboxing && \
+    opam update --repositories default && \
     opam pin add -n alt-ergo $ALTERGO_VERSION && \
     opam install alt-ergo && \
     opam clean && \
