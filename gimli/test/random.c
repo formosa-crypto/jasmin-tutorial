@@ -15,7 +15,7 @@
 #define RAND_UINT64_LOOP_COUNT 5
 #endif
 
-uint8_t rand_uint8() { return (uint8_t)rand(); }
+uint8_t rand_uint8(void) { return (uint8_t)rand(); }
 
 uint8_t rand_uint8_between(uint8_t lo, uint8_t hi) {
   uint8_t x = rand_uint8();

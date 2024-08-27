@@ -21,8 +21,8 @@ TEST_HEADERS := \
 
 CC := gcc
 CFLAGS := \
-	-Wall -Wextra -Werror -Wpedantic -Wunreachable-code -Wconversion -Wshadow \
-	-Warith-conversion -g -O3
+	-O3 -g -Wall -Wextra -Werror -Wpedantic -Wunreachable-code -Wconversion -Wshadow # \
+	# -Warith-conversion
 CINCLUDE := -I $(REF_DIR) -I $(JAZZ_DIR)
 CCOMPILE := $(CC) $(CINCLUDE) $(CFLAGS)
 
@@ -53,7 +53,7 @@ $(JAZZ_ASM): $(JAZZ_SOURCES)
 	$(JASMINC) $(JASMIN_FLAGS) $(JAZZ_MAIN) -o $(JAZZ_ASM)
 
 clean:
-	rm -f $(OUT) $(JAZZ_ASM)
+	rm -rf $(OUT) $(JAZZ_ASM) *.dSYM
 
 all: $(OUT)
 

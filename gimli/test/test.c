@@ -1,5 +1,8 @@
 #include "test.h"
 
+#ifdef __LINUX__
+#define _GNU_SOURCE
+#endif
 #include <assert.h>
 #include <inttypes.h>
 #include <stdio.h>
@@ -14,7 +17,7 @@
 #define GIMLI_N 12
 #define GIMLI_BYTES (GIMLI_N * sizeof(uint32_t))
 
-int test_sbox1() {
+int test_sbox1(void) {
   uint32_t x = rand_uint32();
   uint32_t y = rand_uint32();
   uint32_t z = rand_uint32();
@@ -33,7 +36,7 @@ int test_sbox1() {
   return 0;
 }
 
-int test_sbox2() {
+int test_sbox2(void) {
   uint32_t x = rand_uint32();
   uint32_t y = rand_uint32();
   uint32_t z = rand_uint32();
@@ -52,7 +55,7 @@ int test_sbox2() {
   return 0;
 }
 
-int test_sbox3() {
+int test_sbox3(void) {
   uint32_t x = rand_uint32();
   uint32_t y = rand_uint32();
   uint32_t z = rand_uint32();
@@ -90,7 +93,7 @@ int cmp_states(uint32_t st0[GIMLI_N], uint32_t st1[GIMLI_N], char *msg) {
   return 0;
 }
 
-int test_sbox() {
+int test_sbox(void) {
   uint32_t c_state[GIMLI_N], jazz_state[GIMLI_N];
   fill_state(c_state, jazz_state);
 
@@ -109,7 +112,7 @@ int test_sbox() {
   return res;
 }
 
-int test_small_swap() {
+int test_small_swap(void) {
   uint32_t c_state[GIMLI_N], jazz_state[GIMLI_N];
   fill_state(c_state, jazz_state);
 
@@ -119,7 +122,7 @@ int test_small_swap() {
   return cmp_states(c_state, jazz_state, "small_swap(...)\n");
 }
 
-int test_big_swap() {
+int test_big_swap(void) {
   uint32_t c_state[GIMLI_N], jazz_state[GIMLI_N];
   fill_state(c_state, jazz_state);
 
@@ -129,7 +132,7 @@ int test_big_swap() {
   return cmp_states(c_state, jazz_state, "big_swap(...)\n");
 }
 
-int test_gimli() {
+int test_gimli(void) {
   uint32_t c_state[GIMLI_N], jazz_state[GIMLI_N];
   fill_state(c_state, jazz_state);
 
