@@ -36,18 +36,7 @@ setup_doc() {
 }
 
 setup_tools() {
-  (cd $DST_DIR &&
-   git clone https://github.com/EasyCrypt/easycrypt.git &&
-   cd easycrypt &&
-   git checkout $ECV)
-
-  (cd $DST_DIR &&
-   git clone https://github.com/jasmin-lang/jasmin.git &&
-   cd jasmin &&
-   git checkout $JASMINV)
-
   cp ${ARTIFACT_DIR}/Dockerfile $DST_DIR
-  cp ${ARTIFACT_DIR}/setup.sh $DST_DIR
 }
 
 setup_proofs() {
