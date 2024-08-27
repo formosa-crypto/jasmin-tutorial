@@ -1,6 +1,6 @@
 #include "test.h"
 
-#ifdef __LINUX__
+#ifdef __linux__
 #define _GNU_SOURCE
 #endif
 #include <assert.h>
