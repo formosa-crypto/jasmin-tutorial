@@ -69,7 +69,7 @@ Using these as examples, we will see how:
 ### Requirements/Prerequisites
 Attendees are expected to be familiar with the C programming language.
 
-Additionally, in order to speed-up the setup process, Docker should be installed
+Additionally, in order to speed-up the setup process, Docker should be [installed](https://www.docker.com/get-started/)
 prior to the tutorial[1].
 
 [1] On ARM-based Macbooks, make sure the following options are set in the Docker settings:
