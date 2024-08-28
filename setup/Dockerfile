@@ -65,17 +65,18 @@ RUN wget --no-verbose --show-progress --progress=bar:force:noscroll --timeout=10
     sudo chmod 755 /usr/local/bin/z3  && \
     rm -f z3-$Z3_VERSION-x64-glibc-2.31.zip
 
-# #-- easycrypt
-# RUN git clone https://github.com/EasyCrypt/easycrypt.git && \
-#     cd easycrypt && \
-#     git fetch --append && \
-#     git checkout $EASYCRYPT_COMMIT && \
-#     USER=$USERNAME source $HOME/.nix-profile/etc/profile.d/nix.sh && \
-#     make nix-build && \
-#     sudo install -D result/bin/easycrypt /usr/local/bin/ && \
-#     sudo install -D result/bin/why3 /usr/local/bin/ && \
-#     eval $(opam env) && \
-#     easycrypt why3config
+#-- easycrypt
+RUN git clone https://github.com/EasyCrypt/easycrypt.git && \
+    cd easycrypt && \
+    git fetch --append && \
+    git checkout $EASYCRYPT_COMMIT && \
+    USER=$USERNAME source $HOME/.nix-profile/etc/profile.d/nix.sh && \
+    make nix-build && \
+    sudo install -D result/bin/easycrypt /usr/local/bin/ && \
+    sudo install -D result/bin/why3 /usr/local/bin/ && \
+    eval $(opam env) && \
+    easycrypt why3config && \
+    cd ../ && rm -rf easycrypt
 
 #-- jasmin (compiler)
 RUN git clone https://gitlab.com/jasmin-lang/jasmin-compiler.git jasmin-compiler_$JASMIN_COMPILER_COMMIT && \
@@ -89,12 +90,12 @@ RUN git clone https://gitlab.com/jasmin-lang/jasmin-compiler.git jasmin-compiler
     cd ../../ && rm -rf jasmin-compiler_$JASMIN_COMPILER_COMMIT
 
 #-- jasmin (eclib)
-RUN git clone https://github.com/jasmin-lang/jasmin.git jasmin && \
-    cd jasmin && \
+RUN git clone https://github.com/jasmin-lang/jasmin.git .jasmin && \
+    cd .jasmin && \
     git fetch --append && \
     git checkout ${JASMIN_COMMIT} && \
     mkdir -p /home/$USERNAME/.config/easycrypt/ && \
-    echo -e "[general]\nidirs = Jasmin:/home/$USERNAME/jasmin/eclib" > /home/$USERNAME/.config/easycrypt/easycrypt.conf
+    echo -e "[general]\nidirs = Jasmin:/home/$USERNAME/.jasmin/eclib" > /home/$USERNAME/.config/easycrypt/easycrypt.conf
 
 #-- eval the opam env
 RUN echo "eval $(opam env)" >> /home/$USERNAME/.bashrc
