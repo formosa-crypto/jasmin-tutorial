@@ -1,27 +1,47 @@
-fn sbox1(reg u32 x y z) -> reg u32 {
+// The second argument must be a compile-time integer.
+inline
+fn rotate(reg u32 x, inline int bits) {
+    x <<r= bits;
     return x;
 }
 
+fn sbox1(reg u32 x y z) -> reg u32 {
+    reg u32 r;
+    r = 0;
+    return r;
+}
+
+// Try using an intrinsic.
 fn sbox2(reg u32 x y z) -> reg u32 {
-    return x;
+    reg u32 r;
+    r = 0;
+    return r;
 }
 
 fn sbox3(reg u32 x y z) -> reg u32 {
-    return x;
+    reg u32 r;
+    r = 0;
+    return r;
 }
 
+/* Try using the rotate function.
+   It modifies its first argument, so
+       y = rotate(x, 3);
+       y += x;
+   doesn't work, because x will have changed. */
 fn sbox(reg ptr u32[12] state, reg u64 column) -> reg ptr u32[12] {
-    return state;
+    return state; // It is important to return state.
 }
 
 fn small_swap(reg ptr u32[12] state) -> reg ptr u32[12] {
-    return state;
+    return state; // It is important to return state.
 }
 
 fn big_swap(reg ptr u32[12] state) -> reg ptr u32[12] {
-    return state;
+    return state; // It is important to return state.
 }
 
+// Try inlining the function calls.
 fn gimli(reg ptr u32[12] state) -> reg ptr u32[12] {
-    return state;
+    return state; // It is important to return state.
 }
