@@ -1,11 +1,6 @@
-REF_DIR := ../c/ref
-REF_SOURCES := $(REF_DIR)/gimli.c
-REF_HEADERS := $(REF_DIR)/gimli.h
-JAZZ_DIR := ../jasmin/
-JAZZ_MAIN := $(JAZZ_DIR)/jazz_gimli.jazz
-JAZZ_SOURCES := $(JAZZ_DIR)/gimli.jazz $(JAZZ_MAIN)
-JAZZ_HEADERS := $(JAZZ_DIR)/jazz_gimli.h
-JAZZ_ASM := jazz_gimli.s
+-include ../Makefile.conf
+
+# --------------------------------------------------------------------
 
 TEST_SOURCES := \
 	main.c \
@@ -23,15 +18,12 @@ CC := gcc
 CFLAGS := \
 	-O3 -g -Wall -Wextra -Werror -Wpedantic -Wunreachable-code -Wconversion -Wshadow # \
 	# -Warith-conversion
-CINCLUDE := -I $(REF_DIR) -I $(JAZZ_DIR)
+CINCLUDE := -I $(REF_DIR) -I $(JAZZ_REF)
 CCOMPILE := $(CC) $(CINCLUDE) $(CFLAGS)
 
 OUT := out.o
 
 TESTN ?= 0
-
-JASMINC ?= jasminc
-JASMIN_FLAGS +=
 
 VALGRIND ?= valgrind
 VALGRIND_FLAGS += \
@@ -40,20 +32,23 @@ VALGRIND_FLAGS += \
 	--track-origins=yes \
 	--verbose
 
+# --------------------------------------------------------------------
+
 .PHONY:
 	clean
 	lint
 	run
 	valgrind
+	all
 
 $(OUT): $(SOURCES) $(HEADERS) $(JAZZ_ASM)
 	$(CCOMPILE) $(TEST_SOURCES) $(REF_SOURCES) $(JAZZ_ASM) -o $(OUT)
 
-$(JAZZ_ASM): $(JAZZ_SOURCES)
-	$(JASMINC) $(JASMIN_FLAGS) $(JAZZ_MAIN) -o $(JAZZ_ASM)
+$(JAZZ_ASM):
+	$(MAKE) -C $(JAZZ_DIR) $(@)
 
-clean:
-	rm -rf $(OUT) $(JAZZ_ASM) *.dSYM
+$(JAZZ_ASM_AVX):
+	$(MAKE) -C $(JAZZ_DIR) $(@)
 
 all: $(OUT)
 
@@ -63,5 +58,12 @@ lint:
 run: $(SOURCES) $(HEADERS) $(JAZZ_ASM) $(OUT)
 	./$(OUT) $(TESTN)
 
+run_avx: $(SOURCES) $(HEADERS) $(JAZZ_ASM_AVX) $(OUT)
+	./$(OUT) $(TESTN)
+
 valgrind: $(OUT)
 	$(VALGRIND) $(VALGRIND_FLAGS) ./$(OUT) $(TESTN)
+
+clean:
+	-rm -rf *.dSYM
+	-rm -rf $(OUT)

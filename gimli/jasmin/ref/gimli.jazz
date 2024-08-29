@@ -1,0 +1,27 @@
+fn sbox1(reg u32 x y z) -> reg u32 {
+    return x;
+}
+
+fn sbox2(reg u32 x y z) -> reg u32 {
+    return x;
+}
+
+fn sbox3(reg u32 x y z) -> reg u32 {
+    return x;
+}
+
+fn sbox(reg ptr u32[12] state, reg u64 column) -> reg ptr u32[12] {
+    return state;
+}
+
+fn small_swap(reg ptr u32[12] state) -> reg ptr u32[12] {
+    return state;
+}
+
+fn big_swap(reg ptr u32[12] state) -> reg ptr u32[12] {
+    return state;
+}
+
+fn gimli(reg ptr u32[12] state) -> reg ptr u32[12] {
+    return state;
+}
