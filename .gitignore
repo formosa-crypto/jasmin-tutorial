@@ -11,3 +11,4 @@
 *.o
 gimli/test/jazz_gimli.s
 presentation/otp.s
+gimli/proof/extraction/
