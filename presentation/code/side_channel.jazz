@@ -1,4 +1,5 @@
 // Whether the buffers p and q coincide on the first 8*n bytes.
+export
 fn memeq(#public reg u64 p q n) -> #public reg u64 {
     reg u64 r one i;
     r = 0;
@@ -99,7 +100,7 @@ fn strlen_sct(#transient reg u64 s) -> #public reg u64 {
         c = (u8)[s + i];
         #declassify is_null = #SETcc(c != 0); /* We declassify the result of
                                                  using SETcc on the ZF flag */
-        is_null = #protect_8(cond, msf);      // and mask this byte.
+        is_null = #protect_8(is_null, msf);      // and mask this byte.
     } (is_null == 1) {
         msf = #update_msf(is_null == 1, msf);
         i += 1;

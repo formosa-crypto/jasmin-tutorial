@@ -1,0 +1,156 @@
+\PassOptionsToPackage{table,dvipsnames}{xcolor}
+\documentclass[
+  xcolor={table,dvipsnames},
+]{beamer}
+
+\usetheme{metropolis}
+
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+
+\newcommand{\nextframe}{{\color{Red}{[NEXT FRAME]}}}
+
+\begin{document}
+\begin{frame}{Title page}
+  In this tutorial we will give an overview of Jasmin, a programming language
+  designed to write high-assurance high-speed cryptography.
+
+  \vfill
+
+  We are Miguel and Santiago from MPI-SP.
+
+  \vfill
+
+  The tutorial will be pretty hands-on, so let's begin right away with an
+  example.
+
+  \nextframe
+\end{frame}
+
+\begin{frame}{memeq}
+  Jasmin is a low-level programming language with C-like syntax.
+
+  \vfill
+
+  This is a simple function that checks if two memory regions \texttt{p}
+  and \texttt{q} coincide in the first \texttt{n} quadwords.
+
+  \vfill
+
+  Jasmin comes with tools to verify that code is
+  \begin{itemize}
+  \itemsep=1em
+  \item[] correct (relative to a specification);
+  \item[] safe (e.g., it doesn't divide by zero); and
+  \item[] secure (e.g., against side-channel attacks).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{memeq}
+  It has assignments, whiles, ifs, and functions.
+
+  \vfill
+
+  But is is lower-level than C: it really is structured assembly.
+
+  \vfill
+
+  Each Jasmin instruction must correspond to an assembly instruction.
+
+  \nextframe
+\end{frame}
+
+\begin{frame}{memeq 2}
+  Indeed, we can use assembly instructions directly in the Jasmin source file.
+
+  \nextframe
+
+  \vfill
+
+  Here I'm using the \texttt{INC} x86-64 instruction to increment \texttt{i},
+  this is the dashed red arrow.
+\end{frame}
+
+\begin{frame}{memeq 2}
+  There are two reasons we need a language at a lower-level than C: efficiency
+  and security.
+
+  \vfill
+
+  Regarding efficiency, we can be much more precise and detailed with our
+  optimizations.
+
+  \vfill
+
+  Regarding security, we can see many low-level problems at source-level,
+  without the compiler getting in the way.
+\end{frame}
+
+
+\begin{frame}{memeq 2}
+  Well, but then why bother with Jasmin when we have assembly?
+  Same reasons, different emphasis: security and efficiency.
+
+  \vfill
+
+  A structured language with a clearly defined semantics avoids tons of the
+  problems of trusting large assembly codebases.
+
+  \vfill
+
+  It is also important for efficiency: higher-assurances on our code allows more
+  aggressive optimizations.
+\end{frame}
+
+\begin{frame}{memeq 2}
+  Jasmin gives structure to assembly programs with functions, conditionals and
+  loops without compromising efficiency or security.
+
+  \nextframe
+
+  Their compilation is standard and predictable:
+  \begin{itemize}
+  \itemsep=1em
+  \item[] functions (in dotted green) compile to a label and a return;
+  \item[] loops (in continuous red) compile to a check and a backward jump; and
+  \item[] conditionals (in dashed blue) compile to a check and a jump to the
+  else branch.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{More online}
+  Now let's write some Jasmin.
+
+  \nextframe
+
+  (Leave this slide while people work.)
+\end{frame}
+
+\begin{frame}{otp}
+  Have people open the files and setup Docker.
+
+  \vfill
+
+  A bit more on syntax (\texttt{reg ptr}s).
+\end{frame}
+
+\begin{frame}{gimli: sboxes}
+  Until we're done with sboxes.
+\end{frame}
+
+\begin{frame}{safety}
+  Show how to avoid common pitfalls.
+\end{frame}
+
+\begin{frame}{gimli: structure}
+  Some time?
+\end{frame}
+
+\begin{frame}{side channels}
+  Show the CT checker and the SCT checker.
+\end{frame}
+
+\begin{frame}{gimli: finish \& AVX}
+\end{frame}
+
+\end{document}
