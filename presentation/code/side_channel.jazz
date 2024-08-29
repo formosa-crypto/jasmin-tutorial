@@ -1,6 +1,5 @@
 // Whether the buffers p and q coincide on the first 8*n bytes.
-export
-fn jazz_memeq(#public reg u64 p q n) -> #public reg u64 {
+fn memeq(#public reg u64 p q n) -> #public reg u64 {
     reg u64 r one i;
     r = 0;
     one = 1;
@@ -22,8 +21,7 @@ fn jazz_memeq(#public reg u64 p q n) -> #public reg u64 {
     return r;
 }
 
-export
-fn jazz_memeq_early_abort(#public reg u64 p q n) -> #public reg u64 {
+fn memeq_early_abort(#public reg u64 p q n) -> #public reg u64 {
     reg u64 i;
     i = 0;
 
@@ -51,8 +49,7 @@ fn jazz_memeq_early_abort(#public reg u64 p q n) -> #public reg u64 {
 }
 
 // Length of a null-terminated string.
-export
-fn jazz_strlen(#public reg u64 s) -> #public reg u64 {
+fn strlen(#public reg u64 s) -> #public reg u64 {
     reg u64 i;
     i = 0;
 
@@ -69,8 +66,7 @@ fn jazz_strlen(#public reg u64 s) -> #public reg u64 {
     return i;
 }
 
-export
-fn jazz_strlen_ct(#public reg u64 s) -> #public reg u64 {
+fn strlen_ct(#public reg u64 s) -> #public reg u64 {
     reg u64 i;
     i = 0;
 
@@ -88,8 +84,7 @@ fn jazz_strlen_ct(#public reg u64 s) -> #public reg u64 {
     return i;
 }
 
-export
-fn jazz_strlen_sct(#transient reg u64 s) -> #public reg u64 {
+fn strlen_sct(#transient reg u64 s) -> #public reg u64 {
     reg u64 msf;
     msf = #init_msf();
 
