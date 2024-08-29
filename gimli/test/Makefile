@@ -15,9 +15,7 @@ SOURCES := $(TEST_SOURCES) $(REF_SOURCES) $(JAZZ_SOURCES)
 HEADERS := $(TEST_HEADERS) $(REF_HEADERS) $(JAZZ_HEADERS)
 
 CC := gcc
-CFLAGS := \
-	-O3 -g -Wall -Wextra -Werror -Wpedantic -Wunreachable-code -Wconversion -Wshadow # \
-	# -Warith-conversion
+CFLAGS := -O3 -g -Wall -Wextra -Werror -Wpedantic -Wunreachable-code -Wconversion -Wshadow
 CINCLUDE := -I $(REF_DIR) -I $(JAZZ_REF)
 CCOMPILE := $(CC) $(CINCLUDE) $(CFLAGS)
 
@@ -67,3 +65,4 @@ valgrind: $(OUT)
 clean:
 	-rm -rf *.dSYM
 	-rm -rf $(OUT)
+	-rm -rf $(JAZZ_ASM) $(JAZZ_ASM_AVX)

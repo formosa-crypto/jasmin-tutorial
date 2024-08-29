@@ -9,6 +9,6 @@
 *.toc
 *.nav
 *.o
-gimli/test/jazz_gimli.s
+gimli/jasmin/ref/jazz_gimli.s
 gimli/proof/extraction/
 presentation/otp/otp.s
