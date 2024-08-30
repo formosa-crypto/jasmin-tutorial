@@ -11,6 +11,7 @@
 #include <time.h>
 
 #include "gimli.h"
+#include "gimliv.h"
 #include "jazz_gimli.h"
 #include "random.h"
 
@@ -92,6 +93,8 @@ int cmp_states(uint32_t st0[GIMLI_N], uint32_t st1[GIMLI_N], char *msg) {
 
   return 0;
 }
+
+// int cmp_vstates()
 
 int test_sbox(void) {
   uint32_t c_state[GIMLI_N], jazz_state[GIMLI_N];

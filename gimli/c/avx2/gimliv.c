@@ -1,7 +1,7 @@
 #define R 24 /* XXX: also baked into rotate24() below */
 #define S 9
 
-#include <x86intrin.h>
+#include "gimliv.h"
 
 typedef unsigned int uint32;
 
@@ -46,56 +46,54 @@ static inline void _mm256_storeu2_m128i(__m128i *low,__m128i *high,__m256i x)
   _mm_storeu_si128(high,_mm256_extracti128_si256(x,1));
 }
 
-extern void gimli(uint32 *state)
-{
-  int round;
-  __m256i x;
-  __m256i y;
-  __m256i z;
-  __m256i newy;
+statev sboxv(statev sv) {
+	__m256i newy;
   __m256i newz;
 
-  x = _mm256_loadu2_m128i((void *) (state + 0),(void *) (state + 12));
-  y = _mm256_loadu2_m128i((void *) (state + 4),(void *) (state + 16));
-  z = _mm256_loadu2_m128i((void *) (state + 8),(void *) (state + 20));
+	sv.x = rotate24(sv.x);
+	sv.y = rotate(sv.y,S);
+	newz = sv.x ^ shift(sv.z,1) ^ shift(sv.y&sv.z,2);
+	newy = sv.y ^ sv.x          ^ shift(sv.x|sv.z,1);
+	sv.x = sv.z ^ sv.y          ^ shift(sv.x&sv.y,3);
+	sv.y = newy;
+	sv.z = newz;
 
-  for (round = 5;round >= 0;--round) {
-       x = rotate24(x);
-       y = rotate(y,S);
-    newz = x ^ shift(z,1) ^ shift(y&z,2);
-    newy = y ^ x          ^ shift(x|z,1);
-       x = z ^ y          ^ shift(x&y,3);
-       y = newy;
-       z = newz;
+	return sv;
+}
 
-    x = _mm256_shuffle_epi32(x,_MM_SHUFFLE(2,3,0,1));
-    x ^= round[(__m256i *) coeffs];
+__m256i small_swapv(__m256i x) {
+		x = _mm256_shuffle_epi32(x,_MM_SHUFFLE(2,3,0,1));
+		return x;
+}
 
-       x = rotate24(x);
-       y = rotate(y,S);
-    newz = x ^ shift(z,1) ^ shift(y&z,2);
-    newy = y ^ x          ^ shift(x|z,1);
-       x = z ^ y          ^ shift(x&y,3);
-       y = newy;
-       z = newz;
+__m256i big_swapv(__m256i x) {
+	x = _mm256_shuffle_epi32(x,_MM_SHUFFLE(1,0,3,2));
+	return x;
+}
 
-       x = rotate24(x);
-       y = rotate(y,S);
-    newz = x ^ shift(z,1) ^ shift(y&z,2);
-    newy = y ^ x          ^ shift(x|z,1);
-       x = z ^ y          ^ shift(x&y,3);
-       y = newy;
-       z = newz;
+extern void gimliv(uint32 *state)
+{
+  int round;
+	statev sv;
 
-    x = _mm256_shuffle_epi32(x,_MM_SHUFFLE(1,0,3,2));
+  sv.x = _mm256_loadu2_m128i((void *) (state + 0),(void *) (state + 12));
+  sv.y = _mm256_loadu2_m128i((void *) (state + 4),(void *) (state + 16));
+  sv.z = _mm256_loadu2_m128i((void *) (state + 8),(void *) (state + 20));
 
-       x = rotate24(x);
-       y = rotate(y,S);
-    newz = x ^ shift(z,1) ^ shift(y&z,2);
-    newy = y ^ x          ^ shift(x|z,1);
-       x = z ^ y          ^ shift(x&y,3);
-       y = newy;
-       z = newz;
+  for (round = 24;round >= 0;--round) {
+		sv = sboxv(sv);
+
+		if (round % 4 == 0) {
+			sv.x = small_swapv(sv.x);
+		}
+
+		if (round % 4 == 2) {
+			sv.x = big_swapv(sv.x);
+		}
+
+		if (round % 4 == 0) {
+			sv.x ^= round[(__m256i *) coeffs];
+		}
   }
 
   _mm256_storeu2_m128i((void *) (state + 0),(void *) (state + 12),x);

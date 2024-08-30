@@ -1,7 +1,7 @@
 #include <inttypes.h>
 
-#ifndef JAZZ_MAYO_H
-#define JAZZ_MAYO_H
+#ifndef JAZZ_GIMLI_H
+#define JAZZ_GIMLI_H
 
 uint32_t jazz_sbox1(uint32_t x, uint32_t y, uint32_t z);
 uint32_t jazz_sbox2(uint32_t x, uint32_t y, uint32_t z);

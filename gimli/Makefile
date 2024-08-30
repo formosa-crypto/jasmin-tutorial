@@ -2,7 +2,7 @@
 
 # --------------------------------------------------------------------
 
-default: test
+default: run
 
 .PHONY:
 	clean
@@ -14,6 +14,9 @@ run:
 
 check:
 	$(MAKE) -C $(PROOF_DIR) check
+
+jazz:
+	$(MAKE) -C $(JAZZ_DIR) all
 
 clean:
 	@$(MAKE) -C $(JAZZ_DIR) clean

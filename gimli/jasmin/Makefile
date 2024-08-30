@@ -6,6 +6,7 @@ JASMINC ?= jasminc
 JASMIN_FLAGS +=
 
 .PHONE: all
+.default: all
 
 $(JAZZ_ASM): $(JAZZ_SOURCES)
 	$(JASMINC) $(JASMIN_FLAGS) $(JAZZ_MAIN) -o $(JAZZ_ASM)

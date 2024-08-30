@@ -1,0 +1,15 @@
+fn sboxv(reg u128 x y z) -> reg u128, reg u128, reg u128 {
+    return (x,y,z);
+}
+
+fn small_swapv(reg u128 x) -> reg u128 {
+    return x;
+}
+
+fn big_swapv(reg u128 x) -> reg u128 {
+    return x;
+}
+
+fn gimliv(reg ptr u32[12] state) -> reg ptr u32[12] {
+    return state;
+}
