@@ -17,7 +17,7 @@ fn sbox2(reg u32 x y z) -> reg u32 {
     b = x;
     b |= z;
     b <<= 1;
-    a ^= x;
+    _, _, _, _, _, a = #XOR_32(a, x);
     a ^= b;
     return a;
 }
@@ -33,14 +33,20 @@ fn sbox3(reg u32 x y z) -> reg u32 {
     return a;
 }
 
+inline
+fn rol(reg u32 x, inline int bits) -> reg u32 {
+    x <<r= bits;
+    return x;
+}
+
 fn sbox(reg ptr u32[12] state, reg u64 column) -> reg ptr u32[12] {
     reg u32 x y z a;
 
     x = state[0 + column];
-    x <<r= 24;
+    x = rol(x, 24);
 
     y = state[4 + column];
-    y <<r= 9;
+    y = rol(y, 9);
 
     z = state[8 + column];
 

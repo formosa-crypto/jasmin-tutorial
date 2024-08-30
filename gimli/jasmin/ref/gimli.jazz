@@ -1,27 +1,51 @@
+/* Each Jasmin instruction needs to correspond to an assembly instruction. You
+   need to break down complex expressions into several assignments */
 fn sbox1(reg u32 x y z) -> reg u32 {
-    return x;
+    reg u32 r;
+    r = 0;
+    return r;
 }
 
+// Try using the intrinsic XOR.
 fn sbox2(reg u32 x y z) -> reg u32 {
-    return x;
+    reg u32 r;
+    r = 0;
+    return r;
 }
 
 fn sbox3(reg u32 x y z) -> reg u32 {
+    reg u32 r;
+    r = 0;
+    return r;
+}
+
+/* This function modifies its argument. This means that
+       x = rol(y, 3);
+       x += y;
+   won't work because y will have changed after the call and won't be valid for
+   the addition.
+   The second argument is a compile-time integer. */
+inline
+fn rol(reg u32 x, inline int bits) -> reg u32 {
+    x <<r= bits;
     return x;
 }
 
+// Use the rol function.
+// Try inlining some of the function calls to the sboxes.
 fn sbox(reg ptr u32[12] state, reg u64 column) -> reg ptr u32[12] {
     return state;
 }
 
 fn small_swap(reg ptr u32[12] state) -> reg ptr u32[12] {
-    return state;
+    return state; // We must return the pointer since we modified the contents.
 }
 
 fn big_swap(reg ptr u32[12] state) -> reg ptr u32[12] {
-    return state;
+    return state; // We must return the pointer since we modified the contents.
 }
 
+// Experiment using while loops and for loops.
 fn gimli(reg ptr u32[12] state) -> reg ptr u32[12] {
-    return state;
+    return state; // We must return the pointer since we modified the contents.
 }

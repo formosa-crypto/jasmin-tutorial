@@ -15,7 +15,9 @@ SOURCES := $(TEST_SOURCES) $(REF_SOURCES) $(AVX_SOURCES) $(JAZZ_SOURCES) $(JAZZ_
 HEADERS := $(TEST_HEADERS) $(REF_HEADERS) $(AVX_HEADERS) $(JAZZ_HEADERS) $(JAZZ_HEADERS_AVX)
 
 CC := gcc
-CFLAGS := -O3 -g -Wall -Wextra -Werror -Wpedantic -Wunreachable-code -Wconversion -Wshadow -march=native
+CFLAGS := \
+	-O3 -g -Wall -Wextra -Werror -Wpedantic -Wunreachable-code -Wconversion \
+	-Wshadow -march=native
 CINCLUDE := -I $(REF_DIR) -I $(AVX_DIR) -I $(JAZZ_REF) -I $(JAZZ_AVX)
 CCOMPILE := $(CC) $(CINCLUDE) $(CFLAGS)
 
@@ -40,12 +42,13 @@ VALGRIND_FLAGS += \
 	all
 
 $(OUT): $(SOURCES) $(HEADERS) $(JAZZ_ASM) $(JAZZ_ASM_AVX)
-	$(CCOMPILE) $(TEST_SOURCES) $(REF_SOURCES) $(AVX_SOURCES) $(JAZZ_ASM) $(JAZZ_ASM_AVX) -o $(OUT)
+	$(CCOMPILE) $(TEST_SOURCES) $(REF_SOURCES) $(AVX_SOURCES) $(JAZZ_ASM) \
+	$(JAZZ_ASM_AVX) -o $(OUT)
 
-$(JAZZ_ASM):
+$(JAZZ_ASM): $(JAZZ_SOURCES)
 	$(MAKE) -C $(JAZZ_DIR) $(@)
 
-$(JAZZ_ASM_AVX):
+$(JAZZ_ASM_AVX): $(JAZZ_SOURCES)
 	$(MAKE) -C $(JAZZ_DIR) $(@)
 
 all: $(OUT)
