@@ -5,69 +5,54 @@
 
 typedef unsigned int uint32;
 
-static inline __m256i shift(__m256i x,int bits)
+static inline __m128i shift(__m128i x,int bits)
 {
-  return _mm256_slli_epi32(x,bits);
+  if (bits == 0) return x;
+  return _mm_slli_epi32(x,bits);
 }
 
-static inline __m256i rotate(__m256i x,int bits)
+static inline __m128i rotate(__m128i x,int bits)
 {
-  return _mm256_slli_epi32(x,bits) | _mm256_srli_epi32(x,32 - bits);
+  if (bits == 0) return x;
+  return _mm_slli_epi32(x,bits) | _mm_srli_epi32(x,32 - bits);
 }
 
-static inline __m256i rotate24(__m256i x)
+static inline __m128i rotate24(__m128i x)
 {
-  return _mm256_shuffle_epi8(x,
-    _mm256_set_epi8(
-      12,15,14,13,8,11,10,9,4,7,6,5,0,3,2,1,
-      28,31,30,29,24,27,26,25,20,23,22,21,16,19,18,17
+  return _mm_shuffle_epi8(x,
+    _mm_set_epi8(
+      12,15,14,13,8,11,10,9,4,7,6,5,0,3,2,1
     )
   );
 }
 
-static const uint32 coeffs[48] __attribute__((aligned(32))) = {
-  0x9e377904,0,0,0,0x9e377904,0,0,0,
-  0x9e377908,0,0,0,0x9e377908,0,0,0,
-  0x9e37790c,0,0,0,0x9e37790c,0,0,0,
-  0x9e377910,0,0,0,0x9e377910,0,0,0,
-  0x9e377914,0,0,0,0x9e377914,0,0,0,
-  0x9e377918,0,0,0,0x9e377918,0,0,0,
-} ;
-
-
-static inline __m256i __mm256_loadu2_m128i(__m128i *low,__m128i *high)
-{
-  return _mm256_inserti128_si256(_mm256_castsi128_si256(_mm_loadu_si128(low)),_mm_loadu_si128(high),1);
-}
-
-static inline void __mm256_storeu2_m128i(__m128i *low,__m128i *high,__m256i x)
-{
-  _mm_storeu_si128(low,_mm256_extracti128_si256(x,0));
-  _mm_storeu_si128(high,_mm256_extracti128_si256(x,1));
-}
-
 statev sboxv(statev sv) {
-	__m256i newy;
-  __m256i newz;
+  __m128i newx;
+  __m128i newy;
+  __m128i newz;
 
-	sv.x = rotate24(sv.x);
-	sv.y = rotate(sv.y,S);
-	newz = sv.x ^ shift(sv.z,1) ^ shift(sv.y&sv.z,2);
-	newy = sv.y ^ sv.x          ^ shift(sv.x|sv.z,1);
-	sv.x = sv.z ^ sv.y          ^ shift(sv.x&sv.y,3);
-	sv.y = newy;
-	sv.z = newz;
+  sv.x = rotate24(sv.x);
+  sv.y = rotate(sv.y,9);
+  sv.z = rotate(sv.z,0);
+
+  newz = sv.x ^ shift(sv.z,1) ^ shift(sv.y&sv.z,2);
+  newy = sv.y ^ sv.x          ^ shift(sv.x|sv.z,1);
+  newx = sv.z ^ sv.y          ^ shift(sv.x&sv.y,3);
+
+  sv.x = newx;
+  sv.y = newy;
+  sv.z = newz;
 
 	return sv;
 }
 
-__m256i small_swapv(__m256i x) {
-		x = _mm256_shuffle_epi32(x,_MM_SHUFFLE(2,3,0,1));
+__m128i small_swapv(__m128i x) {
+		x = _mm_shuffle_epi32(x,_MM_SHUFFLE(2,3,0,1));
 		return x;
 }
 
-__m256i big_swapv(__m256i x) {
-	x = _mm256_shuffle_epi32(x,_MM_SHUFFLE(1,0,3,2));
+__m128i big_swapv(__m128i x) {
+	x = _mm_shuffle_epi32(x,_MM_SHUFFLE(1,0,3,2));
 	return x;
 }
 
@@ -76,11 +61,11 @@ extern void gimliv(uint32 *state)
   int round;
 	statev sv;
 
-  sv.x = __mm256_loadu2_m128i((void *) (state + 0),(void *) (state + 12));
-  sv.y = __mm256_loadu2_m128i((void *) (state + 4),(void *) (state + 16));
-  sv.z = __mm256_loadu2_m128i((void *) (state + 8),(void *) (state + 20));
+  sv.x = _mm_loadu_si128((void *) (state + 0));
+  sv.y = _mm_loadu_si128((void *) (state + 4));
+  sv.z = _mm_loadu_si128((void *) (state + 8));
 
-  for (round = 24;round >= 0;--round) {
+  for (round = 24;round > 0;--round) {
 		sv = sboxv(sv);
 
 		if (round % 4 == 0) {
@@ -92,11 +77,12 @@ extern void gimliv(uint32 *state)
 		}
 
 		if (round % 4 == 0) {
-			sv.x ^= round[(__m256i *) coeffs];
+      sv.x ^= _mm_set_epi32(0,0,0,0x9e377900);
+      sv.x ^= _mm_set_epi32(0,0,0,round);
 		}
   }
 
-  __mm256_storeu2_m128i((void *) (state + 0),(void *) (state + 12),sv.x);
-  __mm256_storeu2_m128i((void *) (state + 4),(void *) (state + 16),sv.y);
-  __mm256_storeu2_m128i((void *) (state + 8),(void *) (state + 20),sv.z);
+  _mm_storeu_si128((void *) (state + 0),sv.x);
+  _mm_storeu_si128((void *) (state + 4),sv.y);
+  _mm_storeu_si128((void *) (state + 8),sv.z);
 }

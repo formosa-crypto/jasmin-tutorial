@@ -17,7 +17,7 @@ uint64_t rand_uint64(void);
 /* Return a random 64bit value between lo (inclusive) and hi (exclusive). */
 uint64_t rand_uint64_between(uint64_t lo, uint64_t hi);
 
-__m256i rand_m256i(void);
+__m128i rand_m128i(void);
 
 void rand_fill(void *a, uint64_t n);
 

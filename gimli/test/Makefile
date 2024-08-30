@@ -17,7 +17,7 @@ HEADERS := $(TEST_HEADERS) $(REF_HEADERS) $(AVX_HEADERS) $(JAZZ_HEADERS) $(JAZZ_
 CC := gcc
 CFLAGS := \
 	-O3 -g -Wall -Wextra -Werror -Wpedantic -Wunreachable-code -Wconversion \
-	-Wshadow -march=native
+	-Wshadow -march=native # -Wconversion
 CINCLUDE := -I $(REF_DIR) -I $(AVX_DIR) -I $(JAZZ_REF) -I $(JAZZ_AVX)
 CCOMPILE := $(CC) $(CINCLUDE) $(CFLAGS)
 
@@ -33,6 +33,8 @@ VALGRIND_FLAGS += \
 	--verbose
 
 # --------------------------------------------------------------------
+
+.default: run-ref
 
 .PHONY:
 	clean
@@ -57,6 +59,12 @@ lint:
 	clang-format -i $(TEST_SOURCES) $(TEST_HEADERS)
 
 run: $(SOURCES) $(HEADERS) $(JAZZ_ASM) $(JAZZ_ASM_AVX) $(OUT)
+	./$(OUT) $(TESTN)
+
+run-avx: $(SOURCES) $(HEADERS) $(JAZZ_ASM_AVX) $(OUT)
+	./$(OUT) $(TESTN)
+
+run-ref: $(SOURCES) $(HEADERS) $(JAZZ_ASM_AVX) $(OUT)
 	./$(OUT) $(TESTN)
 
 valgrind: $(OUT)

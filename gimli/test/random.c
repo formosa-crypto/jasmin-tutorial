@@ -51,18 +51,14 @@ uint64_t rand_uint64_between(uint64_t lo, uint64_t hi) {
   return x + lo;
 }
 
-__m256i rand_m256i(void) {
-  __m256i r = _mm256_setzero_si256();
+__m128i rand_m128i(void) {
+  __m128i r = _mm_setzero_si128();
   uint64_t x;
 
   x = rand_uint64();
-  r = _mm256_insert_epi64(r, x, 0);
+  r = _mm_insert_epi64(r, x, 0);
   x = rand_uint64();
-  r = _mm256_insert_epi64(r, x, 1);
-  x = rand_uint64();
-  r = _mm256_insert_epi64(r, x, 2);
-  x = rand_uint64();
-  r = _mm256_insert_epi64(r, x, 3);
+  r = _mm_insert_epi64(r, x, 1);
 
   return r;
 }

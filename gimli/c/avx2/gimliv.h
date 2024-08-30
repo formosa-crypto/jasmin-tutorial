@@ -2,12 +2,12 @@
 #include <x86intrin.h>
 
 typedef struct statev {
-	__m256i x;
-	__m256i y;
-	__m256i z;
+	__m128i x;
+	__m128i y;
+	__m128i z;
 } statev;
 
 statev sboxv(statev state);
-__m256i small_swapv(__m256i x);
-__m256i big_swapv(__m256i x);
+__m128i small_swapv(__m128i x);
+__m128i big_swapv(__m128i x);
 void gimliv(uint32_t *state);
