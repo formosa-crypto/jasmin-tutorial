@@ -1,0 +1,77 @@
+% lstlisting jasmin style
+%
+\lstdefinelanguage{Jasmin}{ 
+%
+% Anything betweeen $ becomes LaTeX math mode
+mathescape=true,
+%
+% Comments may or not include Latex commands
+texcl=false, 
+%
+% Toplevel
+morekeywords=[1]{global, export, fn, from, param, require},
+%
+% Commands
+morekeywords=[2]{downto, else, for, if, return, to, while},
+%
+% Types
+morekeywords=[3]{bool, int, ptr, u8, u16, u32, u64, u128, u256},
+%
+% Variable information
+morekeywords=[4]{inline, reg, stack},
+%
+% Comments
+morecomment=[l]{//},
+%
+% Spaces are not displayed as a special character
+showstringspaces=false,
+%
+% Size of tabulations
+tabsize=2,
+%
+% Enables ASCII chars 128 to 255
+extendedchars=false,
+%
+% Case sensitivity
+sensitive=true,
+%
+% Automatic breaking of long lines
+breaklines=false,
+%
+% Default style for listings
+basicstyle=\small\ttfamily,
+%
+% Position of captions is bottom
+captionpos=b,
+%
+%
+% Style for (listings') identifiers
+identifierstyle={\ttfamily\color{Black}},
+% Style for toplevel keywords
+keywordstyle=[1]{\ttfamily\color{Plum}},
+% Style for command keywords
+keywordstyle=[2]{\ttfamily\color{OliveGreen}},
+% Style for type keywords
+keywordstyle=[3]{\ttfamily\color{Blue}},
+% Style for variable information keywords
+keywordstyle=[4]{\ttfamily\color{Blue}},
+% Style for comments
+commentstyle={\ttfamily\color{OliveGreen}},
+%
+}[keywords,comments,strings]
+
+\lstnewenvironment{jasmin}{\lstset{language=Jasmin,mathescape}}{}
+
+% Inline code (text).
+\newcommand{\ijas}[1]{\lstinline[language=Jasmin]!#1!}
+
+% Inline code (tables and math).
+\newcommand{\jasmininlinescript}[1]{%
+  \lstinline[language=Jasmin,basicstyle=\scriptsize\ttfamily]!#1!%
+}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% Local IspellDict: british
+%%% TeX-master: "main.tex"
+%%% End: 

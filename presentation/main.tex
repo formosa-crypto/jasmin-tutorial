@@ -1,0 +1,52 @@
+\PassOptionsToPackage{table,dvipsnames}{xcolor}
+\documentclass[
+  xcolor={table,dvipsnames},
+  10pt,
+  aspectratio=169,
+]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+
+\usetheme{ru}
+
+\usepackage{appendixnumberbeamer}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage[scale=2]{ccicons}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{wrapfig}
+\usepackage{bbding}
+
+\usepackage{pgfplots}
+\usepgfplotslibrary{dateplot}
+
+\usepackage{amsmath,mathtools}
+
+\usepackage{xspace}
+
+\usepackage{listings}
+\usepackage{lstjasmin}
+
+\usepackage{tikz}
+\usetikzlibrary{overlay-beamer-styles}
+\usetikzlibrary{positioning}
+
+\include{macros}
+
+\newcommand*{\loc}[1]{\tikz[remember picture]{\node [] (#1) {}}}
+
+\title{Jasmin: high-assurance high-speed cryptography}
+\author{Miguel Quaresma \and Santiago Arranz Olmos}
+\institute{Max Planck Institute for Security and Privacy}
+\date{September 4, 2024}
+
+\begin{document}
+
+\maketitle
+
+\include{slides}
+
+\end{document}
