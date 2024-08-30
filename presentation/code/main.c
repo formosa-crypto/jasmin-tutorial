@@ -6,8 +6,8 @@
 
 #define N 16
 
-extern char *otp(char *ct, const char *msg, const char *key, const uint64_t n);
-extern char *otp_fixed(char *ct, const char *msg, const char *key);
+extern otp(char *ct, const char *msg, const char *key, const uint64_t n);
+extern otp_fixed(char *ct, const char *msg, const char *key);
 
 size_t min(size_t x, size_t y) { return x < y ? x : y; }
 

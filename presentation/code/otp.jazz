@@ -1,5 +1,6 @@
+// XOR the first n bytes of msg and key and write them to ct.
 export
-fn otp(reg u64 ct msg key n) -> reg u64 {
+fn otp(reg u64 ct msg key n) {
     reg u64 i;
     i = 0;
     while (i < n) {
@@ -9,8 +10,6 @@ fn otp(reg u64 ct msg key n) -> reg u64 {
         (u8)[ct + i] = c;
         i += 1;
     }
-    ct = ct;
-    return ct;
 }
 
 param int N = 16;

@@ -8,7 +8,8 @@
 \usepackage[T1]{fontenc}
 \usepackage[english]{babel}
 
-\newcommand{\nextframe}{{\color{Red}{[NEXT FRAME]}}}
+\newcommand{\hint}[1]{{\color{Red}{[HINT: #1]}}}
+\newcommand{\nextframe}{\hint{NEXT FRAME}}
 
 \begin{document}
 \begin{frame}{Title page}
@@ -121,17 +122,37 @@
 \begin{frame}{More online}
   Now let's write some Jasmin.
 
-  \nextframe
+  \hint{Have people open the files and setup Docker.}
 
-  (Leave this slide while people work.)
+  \hint{Leave the Formosa slide while people work.}
+\end{frame}
+
+\begin{frame}{jazz\_gimli.h}
+  In this file you can see the functions we will implement today.
+
+  In \texttt{gimli.jazz} you have the function declarations with empty bodies.
 \end{frame}
 
 \begin{frame}{otp}
-  Have people open the files and setup Docker.
+  A bit more on syntax: operators are almost the same as in C, for instance here
+  addition is plus and exclusive or is caret.
 
   \vfill
 
-  A bit more on syntax (\texttt{reg ptr}s).
+  Functions marked \texttt{export} are the only entry points of the program.
+  They are what is visible from C (i.e., by the linker).
+
+  \vfill
+
+  Raw memory addresses use square brackets instead of asterisk, and you can
+  specify the size of the load by prefixing it
+  with \texttt{u8}, \texttt{u16}, \texttt{u32}, \texttt{u64}, and so on.
+
+  The default load size is register size.
+\end{frame}
+
+\begin{frame}{otp\_fixed}
+  Array accesses have the same syntax as in C.
 \end{frame}
 
 \begin{frame}{gimli: sboxes}
