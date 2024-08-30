@@ -12,6 +12,12 @@ default: run
 run:
 	$(MAKE) -C $(TEST_DIR) run
 
+run-ref:
+	$(MAKE) -C $(TEST_DIR) run-ref
+
+run-avx:
+	$(MAKE) -C $(TEST_DIR) run-avx
+
 check:
 	$(MAKE) -C $(PROOF_DIR) check
 

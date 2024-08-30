@@ -257,3 +257,11 @@ int (*test_funcs[TEST_NUM])(void) = {
     test_sbox1,      test_sbox2,    test_sbox3, test_sbox,
     test_small_swap, test_big_swap, test_gimli,
 };
+
+char *test_namesv[TEST_NUMV] = {
+  "sboxv", "small_swapv", "big_swapv", "gimliv",
+};
+
+int (*test_funcsv[TEST_NUMV])(void) = {
+  test_sboxv, test_small_swapv, test_big_swapv, test_gimliv,
+};
