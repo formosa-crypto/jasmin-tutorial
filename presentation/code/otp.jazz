@@ -1,21 +1,8 @@
-// XOR the first n bytes of msg and key and write them to ct.
-export
-fn otp(reg u64 ct msg key n) {
-    reg u64 i;
-    i = 0;
-    while (i < n) {
-        reg u8 c;
-        c = (u8)[key + i];
-        c ^= (u8)[msg + i];
-        (u8)[ct + i] = c;
-        i += 1;
-    }
-}
-
 param int N = 16;
 
+// XOR msg and key and put the result in ct.
 export
-fn otp_fixed(reg ptr u8[N] ct msg key) -> reg ptr u8[N] {
+fn otp(reg ptr u8[N] ct msg key) -> reg ptr u8[N] {
     inline int i;
     for i = 0 to N {
         reg u8 c;

@@ -127,51 +127,81 @@
   \hint{Leave the Formosa slide while people work.}
 \end{frame}
 
-\begin{frame}{jazz\_gimli.h}
-  In this file you can see the functions we will implement today.
-
-  In \texttt{gimli.jazz} you have the function declarations with empty bodies.
-\end{frame}
-
-\begin{frame}{otp}
-  A bit more on syntax: operators are almost the same as in C, for instance here
-  addition is plus and exclusive or is caret.
+\begin{frame}{gimli}
+  In \texttt{jazz\_gimli.h} you can see the functions we will implement today.
 
   \vfill
 
-  Functions marked \texttt{export} are the only entry points of the program.
-  They are what is visible from C (i.e., by the linker).
+  In \texttt{gimli.jazz} you have the function declarations with empty bodies
+  and some hints.
 
   \vfill
 
-  Raw memory addresses use square brackets instead of asterisk, and you can
-  specify the size of the load by prefixing it
-  with \texttt{u8}, \texttt{u16}, \texttt{u32}, \texttt{u64}, and so on.
-
-  The default load size is register size.
-\end{frame}
-
-\begin{frame}{otp\_fixed}
-  Array accesses have the same syntax as in C.
+  These functions use pointers, so let me quickly present the syntax.
+  \hint{Show \texttt{otp\_fixed} from \texttt{otp.jazz}.}
 \end{frame}
 
 \begin{frame}{gimli: sboxes}
-  Until we're done with sboxes.
+  Operators are basically the same as in C, for instance here addition is plus
+  and exclusive or is caret.
+
+  \vfill
+
+  \hint{After we're done with sboxes.}
+
+  The next functions use control flow and arrays, so let us check the syntax for
+  them.
+\end{frame}
+
+\begin{frame}{otp}
+  \hint{Show \texttt{otp.jazz}}
+
+  This function takes three pointers, XORs the message and the key and writes
+  the result to the ciphertext.
+
+  Array accesses have the same syntax as in C.
+
+  \vfill
+
+  For loops in Jasmin are always unrolled, this means that they need to have
+  constant ranges.
+
+  This function will have \(16 \times 3 = 48\) instructions.
+\end{frame}
+
+\begin{frame}{EasyCrypt}
+  One of the reasons to use Jasmin is that we can formally prove things about
+  programs in the EasyCrypt proof assistant.
+
+  \vfill
+
+  \hint{Show terminal with \texttt{jasminc otp.jazz -ec otp}.}
+
+  Here I extract a representation of the otp function which I can paste in an EC
+  file.
+
+  \vfill
+
+  \hint{Show EasyCrypt file.}
+
+  The proof assistant lets us write statements like ``if the key comes from a
+  uniform distribution, the output is uniformly distributed.''
+\end{frame}
+
+\begin{frame}{gimli}
+  \hint{Back to gimli.}
 \end{frame}
 
 \begin{frame}{safety}
   Show how to avoid common pitfalls.
 \end{frame}
 
-\begin{frame}{gimli: structure}
-  Some time?
-\end{frame}
-
 \begin{frame}{side channels}
   Show the CT checker and the SCT checker.
 \end{frame}
 
-\begin{frame}{gimli: finish \& AVX}
+\begin{frame}{gimli: AVX}
+  Jasmin supports vectorized (AVX) instructions.
 \end{frame}
 
 \end{document}

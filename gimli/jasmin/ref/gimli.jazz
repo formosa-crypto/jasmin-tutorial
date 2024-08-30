@@ -1,5 +1,5 @@
 /* Each Jasmin instruction needs to correspond to an assembly instruction. You
-   need to break down complex expressions into several assignments */
+   need to break down complex expressions into several assignments. */
 fn sbox1(reg u32 x y z) -> reg u32 {
     reg u32 r;
     r = 0;
@@ -27,7 +27,7 @@ fn sbox3(reg u32 x y z) -> reg u32 {
    The second argument is a compile-time integer. */
 inline
 fn rol(reg u32 x, inline int bits) -> reg u32 {
-    x <<r= bits;
+    x = x <<r bits;
     return x;
 }
 
