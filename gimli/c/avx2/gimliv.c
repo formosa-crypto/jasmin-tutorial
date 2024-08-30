@@ -35,12 +35,12 @@ static const uint32 coeffs[48] __attribute__((aligned(32))) = {
 } ;
 
 
-static inline __m256i _mm256_loadu2_m128i(__m128i *low,__m128i *high)
+static inline __m256i __mm256_loadu2_m128i(__m128i *low,__m128i *high)
 {
   return _mm256_inserti128_si256(_mm256_castsi128_si256(_mm_loadu_si128(low)),_mm_loadu_si128(high),1);
 }
 
-static inline void _mm256_storeu2_m128i(__m128i *low,__m128i *high,__m256i x)
+static inline void __mm256_storeu2_m128i(__m128i *low,__m128i *high,__m256i x)
 {
   _mm_storeu_si128(low,_mm256_extracti128_si256(x,0));
   _mm_storeu_si128(high,_mm256_extracti128_si256(x,1));
@@ -76,9 +76,9 @@ extern void gimliv(uint32 *state)
   int round;
 	statev sv;
 
-  sv.x = _mm256_loadu2_m128i((void *) (state + 0),(void *) (state + 12));
-  sv.y = _mm256_loadu2_m128i((void *) (state + 4),(void *) (state + 16));
-  sv.z = _mm256_loadu2_m128i((void *) (state + 8),(void *) (state + 20));
+  sv.x = __mm256_loadu2_m128i((void *) (state + 0),(void *) (state + 12));
+  sv.y = __mm256_loadu2_m128i((void *) (state + 4),(void *) (state + 16));
+  sv.z = __mm256_loadu2_m128i((void *) (state + 8),(void *) (state + 20));
 
   for (round = 24;round >= 0;--round) {
 		sv = sboxv(sv);
@@ -96,7 +96,7 @@ extern void gimliv(uint32 *state)
 		}
   }
 
-  _mm256_storeu2_m128i((void *) (state + 0),(void *) (state + 12),x);
-  _mm256_storeu2_m128i((void *) (state + 4),(void *) (state + 16),y);
-  _mm256_storeu2_m128i((void *) (state + 8),(void *) (state + 20),z);
+  __mm256_storeu2_m128i((void *) (state + 0),(void *) (state + 12),sv.x);
+  __mm256_storeu2_m128i((void *) (state + 4),(void *) (state + 16),sv.y);
+  __mm256_storeu2_m128i((void *) (state + 8),(void *) (state + 20),sv.z);
 }

@@ -11,11 +11,11 @@ TEST_HEADERS := \
 	random.h \
 	test.h
 
-SOURCES := $(TEST_SOURCES) $(REF_SOURCES) $(AVX_SOURCES) $(JAZZ_SOURCES)
-HEADERS := $(TEST_HEADERS) $(REF_HEADERS) $(AVX_HEADERS) $(JAZZ_HEADERS)
+SOURCES := $(TEST_SOURCES) $(REF_SOURCES) $(AVX_SOURCES) $(JAZZ_SOURCES) $(JAZZ_SOURCES_AVX)
+HEADERS := $(TEST_HEADERS) $(REF_HEADERS) $(AVX_HEADERS) $(JAZZ_HEADERS) $(JAZZ_HEADERS_AVX)
 
 CC := gcc
-CFLAGS := -O3 -g -Wall -Wextra -Werror -Wpedantic -Wunreachable-code -Wconversion -Wshadow
+CFLAGS := -O3 -g -Wall -Wextra -Werror -Wpedantic -Wunreachable-code -Wconversion -Wshadow -march=native
 CINCLUDE := -I $(REF_DIR) -I $(AVX_DIR) -I $(JAZZ_REF) -I $(JAZZ_AVX)
 CCOMPILE := $(CC) $(CINCLUDE) $(CFLAGS)
 
@@ -39,8 +39,8 @@ VALGRIND_FLAGS += \
 	valgrind
 	all
 
-$(OUT): $(SOURCES) $(HEADERS) $(JAZZ_ASM)
-	$(CCOMPILE) $(TEST_SOURCES) $(REF_SOURCES) $(JAZZ_ASM) -o $(OUT)
+$(OUT): $(SOURCES) $(HEADERS) $(JAZZ_ASM) $(JAZZ_ASM_AVX)
+	$(CCOMPILE) $(TEST_SOURCES) $(REF_SOURCES) $(AVX_SOURCES) $(JAZZ_ASM) $(JAZZ_ASM_AVX) -o $(OUT)
 
 $(JAZZ_ASM):
 	$(MAKE) -C $(JAZZ_DIR) $(@)
@@ -53,10 +53,7 @@ all: $(OUT)
 lint:
 	clang-format -i $(TEST_SOURCES) $(TEST_HEADERS)
 
-run: $(SOURCES) $(HEADERS) $(JAZZ_ASM) $(OUT)
-	./$(OUT) $(TESTN)
-
-run_avx: $(SOURCES) $(HEADERS) $(JAZZ_ASM_AVX) $(OUT)
+run: $(SOURCES) $(HEADERS) $(JAZZ_ASM) $(JAZZ_ASM_AVX) $(OUT)
 	./$(OUT) $(TESTN)
 
 valgrind: $(OUT)
@@ -65,4 +62,5 @@ valgrind: $(OUT)
 clean:
 	-rm -rf *.dSYM
 	-rm -rf $(OUT)
-	-rm -rf $(JAZZ_ASM) $(JAZZ_ASM_AVX)
+	-rm -rf $(JAZZ_ASM)
+	-rm -rf $(JAZZ_ASM_AVX)

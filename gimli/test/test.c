@@ -9,11 +9,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <x86intrin.h>
 
 #include "gimli.h"
-#include "gimliv.h"
 #include "jazz_gimli.h"
+#include "gimliv.h"
+#include "jazz_gimliv.h"
 #include "random.h"
+
+#define FILL_LANE(lane0, lane1) \
+  lane0 = rand_m256i(); \
+  lane1 = _mm256_extracti128_si256(lane0, 0);
 
 #define GIMLI_N 12
 #define GIMLI_BYTES (GIMLI_N * sizeof(uint32_t))
@@ -144,6 +150,78 @@ int test_gimli(void) {
 
   return cmp_states(c_state, jazz_state, "gimli(...)\n");
 }
+
+static void store_statev(statev sv, uint32_t *state) {
+  _mm256_storeu2_m128i((void *) (state + 0),(void *) (state + 12),sv.x);
+  _mm256_storeu2_m128i((void *) (state + 4),(void *) (state + 16),sv.y);
+  _mm256_storeu2_m128i((void *) (state + 8),(void *) (state + 20),sv.z);
+}
+
+static statev load_statev(uint32_t *state) {
+  statev sv;
+
+  sv.x = _mm256_loadu2_m128i((void *) (state + 0),(void *) (state + 12));
+  sv.y = _mm256_loadu2_m128i((void *) (state + 4),(void *) (state + 16));
+  sv.z = _mm256_loadu2_m128i((void *) (state + 8),(void *) (state + 20));
+
+  return sv;
+}
+
+int test_sboxv(void) {
+  char *msg;
+  uint32_t c_state[GIMLI_N], jazz_state[GIMLI_N];
+  statev sv;
+  int res;
+
+  fill_state(c_state, jazz_state);
+
+  sv = load_statev(c_state);
+  sv = sboxv(sv);
+  store_statev(sv, c_state);
+  jazz_sboxv(jazz_state);
+
+  if (asprintf(&msg, "sboxv(...)\n") == -1) {
+    printf("ERROR: asprintf failed.\n");
+    return 1;
+  }
+  free(msg);
+
+  res = cmp_states(c_state, jazz_state, msg);
+  return res;
+}
+
+int test_small_swapv(void) {
+  __m256i c_lane;
+  __m128i jazz_lane;
+  FILL_LANE(c_lane, jazz_lane);
+
+  small_swapv(c_lane);
+  jazz_small_swapv(jazz_lane);
+
+  return 0; // cmp_states(c_state, jazz_state, "small_swap(...)\n"); TODO: FIXME
+}
+
+int test_big_swapv(void) {
+    __m256i c_lane;
+  __m128i jazz_lane;
+  FILL_LANE(c_lane, jazz_lane);
+
+  big_swapv(c_lane);
+  jazz_big_swapv(jazz_lane);
+
+  return 0; // cmp_states(c_state, jazz_state, "big_swap(...)\n"); TODO: FIXME
+}
+
+int test_gimliv(void) {
+  uint32_t c_state[GIMLI_N], jazz_state[GIMLI_N];
+  fill_state(c_state, jazz_state);
+
+  gimliv(c_state);
+  jazz_gimliv(jazz_state);
+
+  return cmp_states(c_state, jazz_state, "gimli(...)\n");
+}
+
 
 void init_tests(unsigned int seed) {
   if (0 == seed) {

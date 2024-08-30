@@ -1,5 +1,6 @@
 #include <inttypes.h>
 #include <stdlib.h>
+#include <x86intrin.h>
 
 #ifndef RANDOM_H
 #define RANDOM_H
@@ -15,6 +16,9 @@ uint32_t rand_uint32_between(uint64_t lo, uint64_t hi);
 uint64_t rand_uint64(void);
 /* Return a random 64bit value between lo (inclusive) and hi (exclusive). */
 uint64_t rand_uint64_between(uint64_t lo, uint64_t hi);
+
+__m256i rand_m256i(void);
+
 void rand_fill(void *a, uint64_t n);
 
 #endif

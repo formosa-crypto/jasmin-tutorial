@@ -9,6 +9,9 @@
 *.toc
 *.nav
 *.o
+*.dSYM
+.vscode
 gimli/jasmin/ref/jazz_gimli.s
+gimli/jasmin/avx2/jazz_gimliv.s
 gimli/proof/extraction/
 presentation/otp/otp.s
