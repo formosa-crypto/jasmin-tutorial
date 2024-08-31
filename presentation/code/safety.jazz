@@ -23,7 +23,7 @@ export
 fn termination(reg u64 n) -> reg u64 {
     reg u64 i;
     i = 0;
-    while (i <= n) { // n could be 255
+    while (i <= n) { // n could be 2^64-1
         i += 1;
     }
     return i;
