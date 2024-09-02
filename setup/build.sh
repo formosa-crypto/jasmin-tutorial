@@ -21,7 +21,7 @@ setup_env() {
   DST_DIR=${JASMIN101_INTERNAL_DIR}/${TARGET}
   mkdir -p $DST_DIR
 
-  DST_PROOF_DIR=${DST_DIR}/proof
+  DST_PROOF_DIR=${DST_DIR}/gimli/proof
   mkdir -p $DST_PROOF_DIR
 
   DST_CODE_DIR=${DST_DIR}/gimli
@@ -41,18 +41,16 @@ setup_tools() {
 
 setup_proofs() {
   cp -r ${GIMLI_DIR}/proof/* $DST_PROOF_DIR
-  cp ${GIMLI_DIR}/{Makefile,easycrypt.project} $DST_DIR
-  cp -r ${GIMLI_DIR}/{config,crypto-specs} $DST_DIR
 
   # remove non needed
-  find ${DST_PROOF_DIR} -type f -not -name "*.ec" -not -name "Makefile" -not -name "*.eca" -exec rm {} \;
+  # find ${DST_PROOF_DIR} -type f -not -name "*.ec" -not -name "Makefile" -not -name "*.eca" -exec rm {} \;
 }
 
 setup_code() {
   cp -r ${GIMLI_DIR}/jasmin $DST_CODE_DIR
   cp -r ${GIMLI_DIR}/c $DST_CODE_DIR
   cp -r ${GIMLI_DIR}/test $DST_CODE_DIR
-  # cp ${GIMLI_DIR}/code/Makefile.conf $DST_CODE_DIR
+  cp ${GIMLI_DIR}/{Makefile,Makefile.conf} $DST_CODE_DIR
 }
 
 
@@ -63,7 +61,7 @@ clean() {
 setup_env
 setup_doc
 setup_tools
-#setup_proofs
+setup_proofs
 setup_code
 (cd ${JASMIN101_INTERNAL_DIR} && tar  --exclude="*git*" -cvjf ${TARGET}.tar.bz2 ${TARGET}/)
 clean

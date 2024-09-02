@@ -11,13 +11,20 @@ Abstract:
 
 # Contents
 
+The artifact is structured as follows:
+- `gimli/c/ref`: C reference implementation of Gimli for x86-64
+- `gimli/c/avx2`: C optimized implementation of Gimli for x86-64
+- `gimli/jasmin/ref`: Jasmin implementation of Gimli for x86-64 (exercise)
+- `gimli/jasmin/avx2`: Jasmin optimized implementation of Gimli for x86-64 (exercise)
+- `gimli/test`: test framework for Jasmin implementations of Gimli
+- `gimli/proof`: Easycrypt proofs of equivalence and constant time for Jasmin implementations of Gimli
 
 # Setting up Jasmin & Easycrypt
 
-### Using Docker
+## Using Docker
 
 This artifact contains a Dockerfile which sets up a container with
-Easycrypt along with the contents of the artifact.For information on
+Jasmi and Easycrypt along with the contents of the artifact.For information on
 the installation of Docker see https://docs.docker.com/get-docker/.
 
 
@@ -31,70 +38,14 @@ You can then run the Docker image with:
 
 ```shell
 docker run -it jasmin101
-make check
-make test
-make bench
-make example
 ```
 
-### Using Nix & OPAM (manual mode)
 
-For information on the installation of the Nix package manager see
-https://nixos.org/download.
-
-Via Nix & OPAM (inside the artifact directory):
-
-```
-# 1. If you do not have opam configured already:
-
-## On Debian and derivatives
-apt install opam gcc clang
-
-## On Mac:
-brew install opam
-
-## Then, on all platforms:
-
-# 2. Install EasyCrypt
-cd easycrypt
-make nix-build
-install -D result/bin/easycrypt /usr/local/bin/
-install -D result/bin/why3 /usr/local/bin/
-
-opam install -y opam-depext
-
-# 3. Install external provers for EasyCrypt
-opam init --disable-sandboxing
-
-## Alt-Ergo
-opam pin add -n alt-ergo 2.5.3
-opam depext -y alt-ergo.2.5.3
-opam install -y alt-ergo.2.5.3
-
-## Z3
-opam depext -y z3.4.8.17
-opam install -y z3.4.8.17
-
-eval $(opam env)
-
-## CVC4
-
-### On Debian and derivatives
-apt install cvc4
-
-### On macOS (intel)
-brew tap cvc4/cvc4
-brew install cvc4/cvc4/cvc4
-
-### On macOS (Silicon), you have to download it directly from
-###   https://cvc4.github.io/
-### at version 1/8
-###
-### You have to download the x64 version and configure Rosetta 2
-### to make it executable on macOS Silicon
-
-# 4. Configure EasyCrypt
-# (you have to run it each time you add/change an external prover)
-
-easycrypt why3config
-```
+# Running the artifact
+In the `gimli` directory there is a Makefile with the following targets:
+- `$ make run`: runs the test suite for the reference and optimized implementations of Gimli
+- `$ make run-ref`: runs the test suite for the reference implementation of Gimli
+- `$ make run-avx`: runs the test suite for the optimized implementation of Gimli
+- `$ make check`: checks the Eascrypt proofs of equivalence and constant time for Gimli
+- `$ make jazz`: compiles the Jasmin implementations of Gimli
+- `$ make clean`: cleans the build files in all the subdirectories (`gimli/jazz`, `gimli/test`, `gimli/proof`)
