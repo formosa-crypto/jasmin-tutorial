@@ -86,6 +86,56 @@ fn memeq(reg u64 p q n) -> reg u64 {~~\loc{a00}~~
 \end{tikzpicture}%
 \end{frame}
 
+
+\begin{frame}{Correctness, safety, side channels}
+  \begin{minipage}[t]{0.45\linewidth}
+    \begin{center}
+      \large{\textbf{Correctness}}
+    \end{center}
+    Use EasyCrypt to ensure:
+    \begin{itemize}
+    \item Implementation matches specification
+    \item Specification is secure
+    \end{itemize}
+  \end{minipage} \hfill%
+  \begin{minipage}[t]{0.45\linewidth}
+    \uncover<2->{
+      \begin{center}
+        \large{\textbf{Safety}}
+      \end{center}
+      \begin{itemize}
+      \item Termination
+      \item Array accesses in bounds
+      \item Arithmetic errors
+      \end{itemize}
+    }
+  \end{minipage}
+
+
+  \vspace{3em}
+
+  \begin{minipage}[t]{0.45\linewidth}
+    \uncover<3->{
+      \begin{center}
+        \large{\textbf{Constant time}}
+      \end{center}
+      runtime does not depend on\\secrets
+      \begin{itemize}
+      \item Control flow
+      \item Memory accesses
+    \end{itemize}}
+  \end{minipage}\hfill%
+  \begin{minipage}[t]{0.45\linewidth}
+    \uncover<4>{
+      \begin{center}
+        \large{\textbf{Speculative constant time}}
+      \end{center}
+      CT even under speculative\\execution
+    }
+  \end{minipage}
+\end{frame}
+
+
 \begin{frame}[fragile]{Safety - uninitialized values}
   \lstset{
     language=Jasmin,
@@ -155,7 +205,7 @@ fn memeq(reg u64 p q n) -> reg u64 {~~\loc{a00}~~
   \end{lstlisting}
 \end{frame}
 
-\begin{frame}[fragile]{Safety}
+\begin{frame}[fragile]{Safety - aligned/unaligned memory accesses}
   \lstset{
     language=Jasmin,
     basicstyle=\footnotesize\ttfamily,
