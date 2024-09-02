@@ -201,8 +201,8 @@ int test_small_swapv(void) {
 
   FILL_LANE(c_lane, jazz_lane);
 
-  small_swapv(c_lane);
-  jazz_small_swapv(jazz_lane);
+  c_lane = small_swapv(c_lane);
+  jazz_lane = jazz_small_swapv(jazz_lane);
 
   if (!cmp_lanes(c_lane, jazz_lane)) {
     cl_lane = _mm_extract_epi64(c_lane, 0);
@@ -210,7 +210,7 @@ int test_small_swapv(void) {
     jazzl_lane = _mm_extract_epi64(jazz_lane, 0);
     jazzh_lane = _mm_extract_epi64(jazz_lane, 1);
     printf("ERROR:\n");
-    printf("  small_swapv(%#018llx%016llx)\n", ch_lane, cl_lane);
+    printf("  small_swapv\n");
     printf("  C = %#018llx%016llx \n", ch_lane, cl_lane);
     printf("  JAZZ = %#018llx%016llx\n", jazzh_lane, jazzl_lane);
     return 1;
@@ -224,8 +224,8 @@ int test_big_swapv(void) {
   uint64_t cl_lane, ch_lane, jazzl_lane, jazzh_lane;
   FILL_LANE(c_lane, jazz_lane);
 
-  big_swapv(c_lane);
-  jazz_big_swapv(jazz_lane);
+  c_lane = big_swapv(c_lane);
+  jazz_lane = jazz_big_swapv(jazz_lane);
 
   if (!cmp_lanes(c_lane, jazz_lane)) {
     cl_lane = _mm_extract_epi64(c_lane, 0);
@@ -234,7 +234,6 @@ int test_big_swapv(void) {
     jazzh_lane = _mm_extract_epi64(jazz_lane, 1);
     printf("ERROR:\n");
     printf("  big_swapv\n");
-    printf("  big_swapv(%#018llx%016llx)\n", ch_lane, cl_lane);
     printf("  C = %#018llx%016llx \n", ch_lane, cl_lane);
     printf("  JAZZ = %#018llx%016llx\n", jazzh_lane, jazzl_lane);
     return 1;
