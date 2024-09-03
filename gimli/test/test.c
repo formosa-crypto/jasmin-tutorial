@@ -211,8 +211,8 @@ int test_small_swapv(void) {
     jazzh_lane = _mm_extract_epi64(jazz_lane, 1);
     printf("ERROR:\n");
     printf("  small_swapv\n");
-    printf("  C = %#018llx%016llx \n", ch_lane, cl_lane);
-    printf("  JAZZ = %#018llx%016llx\n", jazzh_lane, jazzl_lane);
+    printf("  C = %#018"PRIx64"%016"PRIx64" \n", ch_lane, cl_lane);
+    printf("  JAZZ = %#018"PRIx64"%016"PRIx64"\n", jazzh_lane, jazzl_lane);
     return 1;
   }
 
@@ -234,8 +234,8 @@ int test_big_swapv(void) {
     jazzh_lane = _mm_extract_epi64(jazz_lane, 1);
     printf("ERROR:\n");
     printf("  big_swapv\n");
-    printf("  C = %#018llx%016llx \n", ch_lane, cl_lane);
-    printf("  JAZZ = %#018llx%016llx\n", jazzh_lane, jazzl_lane);
+    printf("  C = %#018"PRIx64"%016"PRIx64" \n", ch_lane, cl_lane);
+    printf("  JAZZ = %#018"PRIx64"%016"PRIx64"\n", jazzh_lane, jazzl_lane);
     return 1;
   }
 
