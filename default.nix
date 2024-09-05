@@ -8,6 +8,7 @@ in
 
 stdenv.mkDerivation {
   name = "gimli";
+  NIX_CFLAGS_COMPILE = "-march=native -mavx2";
   buildInputs = [
     jasmin.jasmin-compiler gcc clang-tools valgrind
   ];

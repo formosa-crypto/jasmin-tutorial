@@ -92,47 +92,46 @@ fn memeq(reg u64 p q n) -> reg u64 {~~\loc{a00}~~
     \begin{center}
       \large{\textbf{Correctness}}
     \end{center}
-    Use EasyCrypt to ensure:
-    \begin{itemize}
-    \item Implementation matches specification
+    \begin{itemize}\itemsep=1em
     \item Specification is secure
+    \item Implementation \(\iff\) specification
     \end{itemize}
-  \end{minipage} \hfill%
-  \begin{minipage}[t]{0.45\linewidth}
-    \uncover<2->{
+  \end{minipage}\hfill%
+  \uncover<2->{
+    \begin{minipage}[t]{0.45\linewidth}
       \begin{center}
         \large{\textbf{Safety}}
       \end{center}
-      \begin{itemize}
+      \begin{itemize}\itemsep=1em
       \item Termination
       \item Array accesses in bounds
       \item Arithmetic errors
       \end{itemize}
-    }
-  \end{minipage}
+    \end{minipage}
+  }
 
+  \vspace{2em}
 
-  \vspace{3em}
-
-  \begin{minipage}[t]{0.45\linewidth}
-    \uncover<3->{
+  \uncover<3->{
+    \begin{minipage}[t]{0.45\linewidth}
       \begin{center}
         \large{\textbf{Constant time}}
       \end{center}
       Runtime does not depend on secrets
-      \begin{itemize}
+
+      \begin{itemize}\itemsep=1em
       \item Control flow
       \item Memory accesses
-    \end{itemize}}
-  \end{minipage}\hfill%
-  \begin{minipage}[t]{0.45\linewidth}
-    \uncover<4>{
+    \end{itemize}
+    \end{minipage}}\hfill%
+  \uncover<4>{
+    \begin{minipage}[t]{0.45\linewidth}
       \begin{center}
         \large{\textbf{Speculative constant time}}
       \end{center}
       CT even under speculative execution
-    }
-  \end{minipage}
+    \end{minipage}
+  }
 \end{frame}
 
 
