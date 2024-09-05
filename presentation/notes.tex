@@ -18,10 +18,6 @@
 
   \vfill
 
-  We are Miguel and Santiago from MPI-SP.
-
-  \vfill
-
   The tutorial will be pretty hands-on, so let's begin right away with an
   example.
 
@@ -137,7 +133,7 @@
 
   \vfill
 
-  These functions use pointers, so let me quickly present the syntax.
+  These functions use pointers, which have the same syntax as C arrays.
   \hint{Show \texttt{otp\_fixed} from \texttt{otp.jazz}.}
 \end{frame}
 
@@ -149,8 +145,17 @@
 
   \hint{After we're done with sboxes.}
 
-  The next functions use control flow and arrays, so let us check the syntax for
-  them.
+  The next functions use control flow and arrays, which are also similar to C,
+  except for for loops.
+
+  \vfill
+
+  The syntax is \texttt{for x = N to M} or \texttt{for x = N downto M}, and the
+  loop is always unrolled.
+
+  \vfill
+
+  This means that the loop range needs to be known at compile time.
 \end{frame}
 
 \begin{frame}{otp}
