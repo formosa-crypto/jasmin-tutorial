@@ -13,11 +13,12 @@ op eqstate (v: W128.t * W128.t * W128.t) (s: W32.t Array12.t) =
   v.`3 = pack4 [ s.[8]; s.[9]; s.[10]; s.[11] ].
 
  equiv gimli_ref_equiv :
-    Gimli_avx.M.gimli_body ~ Gimli_x86.M.gimli :
-    eqstate arg{1} arg{2} ==> eqstate res{1} res{2}.
+    Gimli_avx.M.gimliv ~ Gimli_x86.M.gimli :
+    ={arg} ==> ={res}.
 proof.
   proc; inline *; wp.
   while (={round} /\ eqstate (x{1}, y{1}, z{1}) state{2}); auto.
   unroll for{2} ^while; wp; skip => />.
   by rewrite !/VPSHUFD_128 !/VPSHUFD_128_B /= zeroextu128E.
 qed.
+

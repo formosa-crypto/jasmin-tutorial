@@ -18,10 +18,10 @@ gimli_x86_ct.ec: $(EXT_DIR) $(JAZZ_MAIN)
 	cd $(EXT_DIR) && $(JASMINC) -arch x86-64 -CT -oec $@ $(JAZZ_MAIN)
 
 gimli_avx.ec: $(EXT_DIR) $(JAZZ_MAIN_AVX)
-	cd $(EXT_DIR) && $(JASMINC) -arch x86-64 $(JAZZ_MAIN_AVX) -ec jazz_gimli -oec $@
+	cd $(EXT_DIR) && $(JASMINC) -arch x86-64 $(JAZZ_MAIN_AVX) -ec jazz_gimliv -oec $@
 
 gimli_avx_ct.ec: $(EXT_DIR) $(JAZZ_MAIN_AVX)
-	cd $(EXT_DIR) && $(JASMINC) -arch x86-64 -CT $(JAZZ_MAIN_AVX) -ec jazz_gimli -oec $@
+	cd $(EXT_DIR) && $(JASMINC) -arch x86-64 -CT $(JAZZ_MAIN_AVX) -ec jazz_gimliv -oec $@
 
 $(EXT_DIR):
 	@mkdir $@
