@@ -1,4 +1,4 @@
-#define R 24 /* XXX: also baked into rotate24() below */
+#define R 24 /* Also baked into rotate24() below. */
 #define S 9
 
 #include "gimliv.h"

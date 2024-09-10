@@ -17,7 +17,7 @@ fn sbox2(reg u32 x y z) -> reg u32 {
     b = x;
     b |= z;
     b <<= 1;
-    _, _, _, _, _, a = #XOR_32(a, x);
+    ?{}, a = #XOR_32(a, x);
     a ^= b;
     return a;
 }

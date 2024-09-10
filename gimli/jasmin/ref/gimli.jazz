@@ -1,3 +1,15 @@
+/* This function modifies its argument. This means that
+     x = rol(y, 3);
+     x += y;
+   won't work because y will have changed after the call and won't be valid for
+   the addition.
+   The second argument is a compile-time integer. */
+inline
+fn rol(reg u32 x, inline int bits) -> reg u32 {
+    x = x <<r bits;
+    return x;
+}
+
 /* Each Jasmin instruction needs to correspond to an assembly instruction. You
    need to break down complex expressions into several assignments. */
 fn sbox1(reg u32 x y z) -> reg u32 {
@@ -6,7 +18,21 @@ fn sbox1(reg u32 x y z) -> reg u32 {
     return r;
 }
 
-// Try using the intrinsic XOR.
+/* Try using the intrinsic XOR. The syntax is
+     ?{}, <dst> = #XOR_<size>(<op1>, <op2>);
+   Note that <dst>, <op1>, and <op2> have the same restrictions as in assembly:
+   <dst> will overwrite <op1>, and at most one of these three can be a memory
+   location.
+   The ?{} part is needed because XOR sets the flags. If you want to use one of
+   the flags, you can write
+     reg bool b;
+     ?{ ZF = b }, <dst> = #XOR_<size>(<op1>, <op2>);
+   and then for instance do
+     if (b) { ... }
+   which is JMPeq.
+   You can also name other conditions, such as unsigned less than or equal
+     ?{ "<=u" = b }, <dst> = #XOR_<size>(<op1>, <op2>);
+   which is JMPbe. */
 fn sbox2(reg u32 x y z) -> reg u32 {
     reg u32 r;
     r = 0;
@@ -17,18 +43,6 @@ fn sbox3(reg u32 x y z) -> reg u32 {
     reg u32 r;
     r = 0;
     return r;
-}
-
-/* This function modifies its argument. This means that
-       x = rol(y, 3);
-       x += y;
-   won't work because y will have changed after the call and won't be valid for
-   the addition.
-   The second argument is a compile-time integer. */
-inline
-fn rol(reg u32 x, inline int bits) -> reg u32 {
-    x = x <<r bits;
-    return x;
 }
 
 // Use the rol function.
