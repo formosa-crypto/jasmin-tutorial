@@ -12,7 +12,7 @@
 *.o
 *.dSYM
 .vscode
-gimli/jasmin/ref/jazz_gimli.s
-gimli/jasmin/avx2/jazz_gimliv.s
-gimli/proof/extraction/
-presentation/otp/otp.s
+ches2024/gimli/jasmin/ref/jazz_gimli.s
+ches2024/gimli/jasmin/avx2/jazz_gimliv.s
+ches2024/gimli/proof/extraction/
+ches2024/presentation/otp/otp.s
