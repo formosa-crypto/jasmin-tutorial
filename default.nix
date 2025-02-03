@@ -1,15 +1,17 @@
-with import <nixpkgs> {};
+{ pkgs ? import (
+  fetchTarball {
+    url = "https://github.com/nixos/nixpkgs/archive/892fd6644b75dcc14059f06684381d4c26bbcef8.tar.gz";
+    sha256 = "sha256:011gzqngzrwggg1dilj6wr6194adjy4xd0adj3hq5zfgavh0z5s7";
+  }) {}
+}:
 
-let
-  jasmin = import (builtins.fetchTarball {
-    url = "https://github.com/NixOS/nixpkgs/archive/95c40a6faec32f126c1ffc9b4cf8882689f7a9bc.tar.gz";
-  }) {};
-in
+with pkgs;
 
 stdenv.mkDerivation {
   name = "gimli";
   NIX_CFLAGS_COMPILE = "-march=native -mavx2";
   buildInputs = [
-    jasmin.jasmin-compiler gcc clang-tools valgrind
+    jasmin-compiler gcc clang-tools valgrind
+    easycrypt why3 z3 alt-ergo cvc4
   ];
 }
