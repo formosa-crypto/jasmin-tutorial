@@ -1,3 +1,12 @@
+/* This file shows different ways of leaking information through speculative constant time attacks
+   The S-CT checker can be executed using,
+    `jasmin-ct --infer -sct -slice=function_name_to_check side_channel.jazz`
+   See https://github.com/jasmin-lang/jasmin/wiki/Constant-time-verification for further
+   information.
+
+   If the checker complains it means your program is somehow leaking secret data.
+*/
+
 // Whether the buffers p and q coincide on the first 8*n bytes.
 export
 fn memeq(#public reg u64 p q n) -> #public reg u64 {
