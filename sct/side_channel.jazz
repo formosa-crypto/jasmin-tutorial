@@ -20,7 +20,9 @@ fn memeq(#public reg u64 p q n) -> #public reg u64 {
         reg u64 a b;
         a = [p + i * 8];
         b = [q + i * 8];
-        r = one if a != b;
+        r = one if a != b; /* Because Jasmin will translate this instruction to CMOVcc, it needs its
+                              parameters to be in registers instead of immediate values.
+                              https://www.felixcloutier.com/x86/cmovcc */
         i += 1;
     }
 
