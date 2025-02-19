@@ -1,20 +1,31 @@
-/* The purpose of this file is to show how to check our program's safety
-   Run `jasminc -checksafety -slice=function_name_to_check safety.jazz` for every function
-   here and see what the checker says about it.
-   See https://github.com/jasmin-lang/jasmin/wiki/Safety-checker for further information.
+/* This file shows how to use the safety checker for Jasmin.
+   Run `jasminc -checksafety -slice=<your function> safety.jazz` for every
+   function here and see what the checker says about it.
+   See https://github.com/jasmin-lang/jasmin/wiki/Safety-checker for further
+   information.
 
-   Once we run the command we can get either "No Safety Violation" or "Possible Safety Violation"
-   message. For each violation, the checker will display the instruction which causes the
-   violation and the reason.
+   Once we run the command we get either "No Safety Violation" or "Possible
+   Safety Violation".
+   For each violation, the checker will display the instruction which causes the
+   violation and the reason, as follows:
+   ```
+   "safety.jazz", line [x]: [cause]
+   ```
 
-    "safety.jazz", line [x]: [cause]
+   The safety checker is incomplete: there are safe programs that will get
+   rejected.
 */
 
-/* *** Possible Safety Violation(s):
+/* This function reads an uninitialized value.
+   The safety checker prints:
+   ```
+   *** Possible Safety Violation(s):
    "safety.jazz", line 17 (4-14): is_init x
 
    * Rel:
    ⊤
+   ```
+   The message `is_init x` indicates that `x` may not be initialized.
 */
 export
 fn uninitialized() -> reg u64 {
