@@ -1,0 +1,152 @@
+/* This function modifies its argument. This means that
+     x = rol(y, 3);
+     x += y;
+   won't work because y will have changed after the call and won't be valid for
+   the addition.
+   The second argument is a compile-time integer. */
+inline
+fn rol(reg u32 x, inline int bits) -> reg u32 {
+    x = x <<r bits;
+    return x;
+}
+
+/* Each Jasmin instruction needs to correspond to an assembly instruction. You
+   need to break down complex expressions into several assignments. */
+fn sbox1(reg u32 x y z) -> reg u32 {
+    reg u32 r tmp1 tmp2;
+    tmp1 = z;
+    tmp1 = tmp1 << 1;
+    
+    tmp2 = y;
+    tmp2 &= z;
+    tmp2 <<= 2;
+
+    r = x;
+    r ^= tmp1;
+    r ^= tmp2;
+    
+    return r;
+}
+
+/* Try using the intrinsic XOR. The syntax is
+     ?{}, <dst> = #XOR_<size>(<op1>, <op2>);
+   Note that <dst>, <op1>, and <op2> have the same restrictions as in assembly:
+   <dst> will overwrite <op1>, and at most one of these three can be a memory
+   location.
+   The ?{} part is needed because XOR sets the flags. If you want to use one of
+   the flags, you can write
+     reg bool b;
+     ?{ ZF = b }, <dst> = #XOR_<size>(<op1>, <op2>);
+   and then for instance do
+     if (b) { ... }
+   which is JMPeq.
+   You can also name other conditions, such as unsigned less than or equal
+     ?{ "<=u" = b }, <dst> = #XOR_<size>(<op1>, <op2>);
+   which is JMPbe. */
+fn sbox2(reg u32 x y z) -> reg u32 {
+    reg u32 r tmp1;
+    tmp1 = x;
+    tmp1 = tmp1 | z;
+    tmp1 = tmp1 << 1;
+
+    r = y;
+    r = #XOR_32(r,x);
+    r ^= tmp1;
+    
+    return r;
+}
+
+fn sbox3(reg u32 x y z) -> reg u32 {
+    reg u32 r tmp1;
+    tmp1 = x;
+    tmp1 &= y;
+    tmp1 <<= 3;
+
+    r = z;
+    r = #XOR_32(r,y);
+    r ^= tmp1;
+    
+    return r;
+}
+
+// Use the rol function.
+// Try inlining some of the function calls to the sboxes.
+fn sbox(reg ptr u32[12] state, reg u64 column) -> reg ptr u32[12] {
+  reg u32 x y z a;
+  
+  x = state[column];
+  x = rol(x, 24);
+  y = state[column+4];
+  y = rol(y, 9);
+  z = state[column + 8];
+
+  a = sbox1(x, y, z);
+  state[column+8] = a;
+
+  a = sbox2(x, y, z);
+  state[column+4] = a;
+
+  a = sbox3(x, y, z);
+  state[column] = a;
+
+  return state;
+}
+
+fn small_swap(reg ptr u32[12] state) -> reg ptr u32[12] {
+  reg u32 x;
+  x = state[0];
+  state[0] = state[1];
+  state[1] = x;
+
+  x = state[2];
+  state[2] = state[3];
+  state[3] = x;
+
+  return state; // We must return the pointer since we modified the contents.
+}
+
+fn big_swap(reg ptr u32[12] state) -> reg ptr u32[12] {
+  
+  reg u32 x;
+  x = state[0];
+  state[0] = state[2];
+  state[2] = x;
+
+  x = state[1];
+  state[1] = state[3];
+  state[3] = x;
+
+  return state; // We must return the pointer since we modified the contents.
+}
+
+// Experiment using while loops and for loops.
+fn gimli(reg ptr u32[12] state) -> reg ptr u32[12] {
+  inline int round;
+  reg u32 tmp;
+  reg u64 column;
+
+  for round = 24 downto 0 {
+    column = 0;
+    while (column < 4) {
+      state = sbox(state, column);
+      column += 1;
+    }
+
+    tmp = round;
+    tmp &= 3;
+    if (tmp == 0) {
+      state = small_swap(state);
+    }
+    if (tmp == 2) {
+      state = big_swap(state);
+    }
+
+    if (tmp == 0) {
+      tmp = 0x9e377900;
+      tmp |= round;
+      state[0] ^= tmp;
+    }
+  }
+
+  return state; // We must return the pointer since we modified the contents.
+}

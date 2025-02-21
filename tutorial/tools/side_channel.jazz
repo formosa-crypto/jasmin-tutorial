@@ -1,0 +1,121 @@
+/* This file shows different ways of leaking information through speculative constant time attacks
+   The S-CT checker can be executed using,
+    `jasmin-ct --infer -sct -slice=function_name_to_check side_channel.jazz`
+   See https://github.com/jasmin-lang/jasmin/wiki/Constant-time-verification for further
+   information.
+
+   If the checker complains it means your program is somehow leaking secret data.
+*/
+
+// Whether the buffers p and q coincide on the first 8*n bytes.
+export
+fn memeq(#public reg u64 p q n) -> #public reg u64 {
+    reg u64 r one i;
+    r = 0;
+    one = 1;
+    i = 0;
+
+    while (i < n) {
+        // Invariant: if r = 0 then p[0:i-1] = q[0:i-1] else p != q
+        reg u64 a b;
+        a = [p + i * 8];
+        b = [q + i * 8];
+        r = one if a != b; /* Because Jasmin will translate this instruction to CMOVcc, it needs its
+                              parameters to be in registers instead of immediate values.
+                              https://www.felixcloutier.com/x86/cmovcc */
+        i += 1;
+    }
+
+    /* The result depends on the contents of the buffers, so it is secret.
+       However, this function is supposed to return this, so we tell the CT
+       checker that r (only one bit of information) is public. */
+    #declassify r = r;
+    return r;
+}
+
+fn memeq_early_abort(#public reg u64 p q n) -> #public reg u64 {
+    reg u64 i;
+    i = 0;
+
+    /* Since we stop early if the two buffers differ, we are leaking information
+       about how much of the buffers coincide through timing side-channels.
+       Thus, the CT checker rejects this program. */
+    while (i < n) {
+        // Invariant: if i <= n then p[0:i-1] = q[0:i-1] else p != q
+        reg u64 a b;
+        a = [p + i * 8];
+        b = [q + i * 8];
+        i = n if a != b;
+        i += 1;
+    }
+
+    reg u8 r;
+    r = #SETcc(i == n); /* Set r to be 1 or 0 depending on this condition. SETcc
+                           sets only the lower byte of the register. */
+
+    reg u64 x;
+    x = (64u)r; // So we need to zero extend.
+
+    #declassify x = x;
+    return x;
+}
+
+// Length of a null-terminated string.
+fn strlen(#public reg u64 s) -> #public reg u64 {
+    reg u64 i;
+    i = 0;
+
+    /* The condition of this loop leaks whether the character is zero.
+       Declassifying the character means that we tell the CT checker that every
+       character in the string is public, which is bad. */
+    reg u8 c;
+    while {
+        c = (u8)[s + i];
+    } (c != 0) {
+        i += 1;
+    }
+
+    return i;
+}
+
+fn strlen_ct(#public reg u64 s) -> #public reg u64 {
+    reg u64 i;
+    i = 0;
+
+    reg bool is_null;
+    while {
+        reg u8 c;
+        c = (u8)[s + i];
+        #declassify is_null = c != 0; /* We can declassify only the bit of
+                                         information we are returning anyways:
+                                         the ZF flag. */
+    } (is_null) {
+        i += 1;
+    }
+
+    return i;
+}
+
+fn strlen_sct(#transient reg u64 s) -> #public reg u64 {
+    reg u64 msf;
+    msf = #init_msf();
+
+    /* An adversary can mistrain the branch predictor to have this loop keep
+       going after it found null-termination. It would then leak whether other
+       parts of memory are zero, which is bad. */
+    reg u64 i;
+    i = 0;
+    reg u8 is_null;
+    while {
+        reg u8 c;
+        c = (u8)[s + i];
+        #declassify is_null = #SETcc(c != 0); /* We declassify the result of
+                                                 using SETcc on the ZF flag */
+        is_null = #protect_8(is_null, msf);   // and mask this byte.
+    } (is_null == 1) {
+        msf = #update_msf(is_null == 1, msf);
+        i += 1;
+    }
+
+    return i;
+}

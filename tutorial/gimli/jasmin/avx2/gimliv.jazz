@@ -1,0 +1,31 @@
+/* The Jasmin intrinsics you need are:
+     VPSLL_4u32
+     VPSRL_4u32
+     VPSHUFB
+     VPSHUFD
+   More information at
+     intel.com/content/www/us/en/docs/intrinsics-guide/index.html. */
+
+/* The compiler will place this 128 bit word in the .data section of the binary.
+   Instead of using decimal or hexadecimal, we describe the constant byte by
+   byte. */
+u128 rotate24pattern =
+    (16u8)[ 12, 15, 14, 13, 8, 11, 10, 9, 4, 7, 6, 5, 0, 3, 2, 1 ];
+
+fn sboxv(reg u128 x y z) -> reg u128, reg u128, reg u128 {
+    return (x, y, z);
+}
+
+/* You need to pass an immediate to the instruction, you can write it
+   element-wise as (4u2)[2, 3, 0, 1] */
+fn small_swapv(reg u128 x) -> reg u128 {
+    return x;
+}
+
+fn big_swapv(reg u128 x) -> reg u128 {
+    return x;
+}
+
+fn gimliv(reg ptr u32[12] state) -> reg ptr u32[12] {
+    return state;
+}

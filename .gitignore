@@ -16,3 +16,7 @@ ches2024/gimli/jasmin/ref/jazz_gimli.s
 ches2024/gimli/jasmin/avx2/jazz_gimliv.s
 ches2024/gimli/proof/extraction/
 ches2024/presentation/otp/otp.s
+tutorial/gimli/jasmin/ref/jazz_gimli.s
+tutorial/gimli/jasmin/avx2/jazz_gimliv.s
+tutorial/gimli/proof/extraction/
+tutorial/presentation/otp/otp.s
