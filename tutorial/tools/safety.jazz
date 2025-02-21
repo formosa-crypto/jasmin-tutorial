@@ -53,12 +53,12 @@ fn arithmetic(reg u64 x y) -> reg u64 {
 }
 
 /* *** Possible Safety Violation(s):
-   "safety.jazz", line 30 (4-13): in_bound: s[U64 ((int /* of u64 */) x) ] (length 8 U8)
+   "safety.jazz", line 30 (4-13): in_bound: s[U64 ((int of u64) x) ] (length 8 U8)
    "safety.jazz", line 31 (4-13): is_init s[U64 0 ]
-     
+
    Memory ranges:
      mem_x: [0; 0]
-     
+
    * Rel:
    {inv_x ≥ 0, inv_x ≤ 18446744073709551615, mem_x = 0}
    mem_x ∊ [0; 0]
@@ -73,10 +73,10 @@ fn index(reg u64 x) -> reg u64 {
 
 /* *** Possible Safety Violation(s):
    "safety.jazz", line 39 (4) to line 41 (5): termination
-  
+
    Memory ranges:
      mem_n: [0; 0]
-     
+
    * Rel:
    {inv_n ≥ 0, inv_n ≤ 18446744073709551614, mem_n = 0}
    mem_n ∊ [0; 0]
@@ -95,11 +95,11 @@ fn termination(reg u64 n) -> reg u64 {
 
    Memory ranges:
      mem_p: [0; 8]
-     
+
    * Rel:
    {mem_p ≥ 0, inv_p ≥ 0, inv_p ≤ 18446744073709551615, mem_p ≤ 8}
    mem_p ∊ [0; 8]
-   
+
    * Alignment: p 64;
 
    This function does not have safety violations but `p` must be 64bit-aligned
