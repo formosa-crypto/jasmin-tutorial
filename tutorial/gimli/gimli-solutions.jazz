@@ -1,20 +1,18 @@
 fn sbox1(reg u32 x y z) -> reg u32 {
-    reg u32 a b c;
-    a = x;
-    b = z;
+    reg u32 b = z;
     b <<= 1;
-    c = y;
+    reg u32 c = y;
     c &= z;
     c <<= 2;
+    reg u32 a = x;
     a ^= b;
     a ^= c;
     return a;
 }
 
 fn sbox2(reg u32 x y z) -> reg u32 {
-    reg u32 a b;
-    a = y;
-    b = x;
+    reg u32 a = y;
+    reg u32 b = x;
     b |= z;
     b <<= 1;
     ?{}, a = #XOR_32(a, x);
@@ -23,9 +21,8 @@ fn sbox2(reg u32 x y z) -> reg u32 {
 }
 
 fn sbox3(reg u32 x y z) -> reg u32 {
-    reg u32 a b;
-    a = z;
-    b = x;
+    reg u32 a = z;
+    reg u32 b = x;
     b &= y;
     b <<= 3;
     a ^= y;
@@ -40,32 +37,33 @@ fn rol(reg u32 x, inline int bits) -> reg u32 {
 }
 
 fn sbox(reg ptr u32[12] state, reg u64 column) -> reg ptr u32[12] {
-    reg u32 x y z a;
 
-    x = state[0 + column];
+    reg u32 x = state[0 + column];
     x = rol(x, 24);
 
-    y = state[4 + column];
+    reg u32 y = state[4 + column];
     y = rol(y, 9);
 
-    z = state[8 + column];
+    reg u32 z = state[8 + column];
 
-    #inline a = sbox1(x, y, z);
-    state[8 + column] = a;
+    #inline
+    reg u32 s1 = sbox1(x, y, z);
+    state[8 + column] = s1;
 
-    #inline a = sbox2(x, y, z);
-    state[4 + column] = a;
+    #inline
+    reg u32 s2 = sbox2(x, y, z);
+    state[4 + column] = s2;
 
-    #inline a = sbox3(x, y, z);
-    state[0 + column] = a;
+    #inline
+    reg u32 s3 = sbox3(x, y, z);
+    state[0 + column] = s3;
 
     return state;
 }
 
 fn small_swap(reg ptr u32[12] state) -> reg ptr u32[12] {
-    reg u32 x y;
-    x = state[0];
-    y = state[1];
+    reg u32 x = state[0];
+    reg u32 y = state[1];
     state[0] = y;
     state[1] = x;
 
@@ -73,13 +71,13 @@ fn small_swap(reg ptr u32[12] state) -> reg ptr u32[12] {
     y = state[3];
     state[2] = y;
     state[3] = x;
+
     return state;
 }
 
 fn big_swap(reg ptr u32[12] state) -> reg ptr u32[12] {
-    reg u32 x y;
-    x = state[0];
-    y = state[2];
+    reg u32 x = state[0];
+    reg u32 y = state[2];
     state[0] = y;
     state[2] = x;
 
@@ -90,14 +88,12 @@ fn big_swap(reg ptr u32[12] state) -> reg ptr u32[12] {
     return state;
 }
 
-export
 fn gimli(reg ptr u32[12] state) -> reg ptr u32[12] {
     inline int round;
     for round = 24 downto 0 {
         inline int column;
         for column = 0 to 4 {
-            reg u64 tmp;
-            tmp = column;
+            reg u64 tmp = column;
 
             #inline state = sbox(state, tmp);
         }

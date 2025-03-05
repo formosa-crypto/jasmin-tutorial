@@ -3,8 +3,7 @@ u128 rotate24pattern =
 
 inline
 fn shift(reg u128 x, inline int count) -> reg u128 {
-    reg u128 r;
-    r = #VPSLL_4u32(x, count);
+    reg u128 r = #VPSLL_4u32(x, count);
     return r;
 }
 
@@ -13,25 +12,23 @@ fn rotate(reg u128 r, inline int count) -> reg u128 {
     if (count == 24) {
         r = #VPSHUFB(r, rotate24pattern);
     } else {
-        reg u128 a, b;
-        a = shift(r, count);
+        reg u128 a = shift(r, count);
         count = 32 - count;
-        b = #VPSRL_4u32(r, count);
+        reg u128 b = #VPSRL_4u32(r, count);
         r = a ^ b;
     }
     return r;
 }
 
 fn sboxv(reg u128 x y z) -> reg u128, reg u128, reg u128 {
-    reg u128 a, b, c, d, e;
     x = rotate(x, 24);
     y = rotate(y, 9);
 
-    a = shift(z, 1);
-    b = y & z;
-    c = shift(b, 2);
-    d = x ^ a;
-    e = d ^ c;
+    reg u128 a = shift(z, 1);
+    reg u128 b = y & z;
+    reg u128 c = shift(b, 2);
+    reg u128 d = x ^ a;
+    reg u128 e = d ^ c;
 
     a = x | z;
     b = shift(a, 1);
@@ -46,7 +43,7 @@ fn sboxv(reg u128 x y z) -> reg u128, reg u128, reg u128 {
     y = d;
     z = e;
 
-    return (x, y, z);
+    return x, y, z;
 }
 
 fn small_swapv(reg u128 x) -> reg u128 {
@@ -63,7 +60,6 @@ fn big_swapv(reg u128 x) -> reg u128 {
 inline
 fn gimli_body(reg u128 x y z) -> reg u128, reg u128, reg u128 {
     inline int round;
-
     for round = 24 downto 0 {
         #inline (x, y, z) = sboxv(x, y, z);
 
@@ -76,25 +72,22 @@ fn gimli_body(reg u128 x y z) -> reg u128, reg u128, reg u128 {
         }
 
         if (round % 4) == 0 { // add constant: pattern c...c...c... etc.
-            reg u32 m;
-            m = 0x9e377900 +32u round;
-            reg u128 a;
-            a = (128u)m;
+            reg u32 m = 0x9e377900 +32u round;
+            reg u128 a = (128u)m;
             x ^= a;
         }
 
     }
-    return (x,y,z);
+
+    return x, y, z;
 }
 
 fn gimliv(reg ptr u32[12] state) -> reg ptr u32[12] {
-    reg u128 x, y, z;
+    reg u128 x = state.[u128 16 * 0];
+    reg u128 y = state.[u128 16 * 1];
+    reg u128 z = state.[u128 16 * 2];
 
-    x = state.[u128 16 * 0];
-    y = state.[u128 16 * 1];
-    z = state.[u128 16 * 2];
-
-    (x,y,z) = gimli_body(x,y,z);
+    x, y, z = gimli_body(x, y, z);
 
     state.[u128 16 * 0] = x;
     state.[u128 16 * 1] = y;
