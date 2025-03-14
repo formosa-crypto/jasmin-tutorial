@@ -11,12 +11,14 @@ TEST_HEADERS := \
 	random.h \
 	test.h
 
-SOURCES := $(TEST_SOURCES) $(REF_SOURCES) $(AVX_SOURCES) $(JAZZ_SOURCES) $(JAZZ_SOURCES_AVX)
-HEADERS := $(TEST_HEADERS) $(REF_HEADERS) $(AVX_HEADERS) $(JAZZ_HEADERS) $(JAZZ_HEADERS_AVX)
+SOURCES := $(TEST_SOURCES) $(REF_SOURCES) $(AVX_SOURCES) $(JAZZ_SOURCES) \
+	$(JAZZ_SOURCES_AVX)
+HEADERS := $(TEST_HEADERS) $(REF_HEADERS) $(AVX_HEADERS) $(JAZZ_HEADERS) \
+	$(JAZZ_HEADERS_AVX)
 
 CC := gcc
-CFLAGS := \
-	-O3 -g -Wall -Wextra -Werror -Wpedantic -Wunreachable-code -Wshadow -march=native # -Wconversion
+CFLAGS := -O3 -g -Wall -Wextra -Werror -Wpedantic -Wunreachable-code \
+	-Wshadow -march=native
 CINCLUDE := -I $(REF_DIR) -I $(AVX_DIR) -I $(JAZZ_REF) -I $(JAZZ_AVX)
 CCOMPILE := $(CC) $(CINCLUDE) $(CFLAGS)
 
