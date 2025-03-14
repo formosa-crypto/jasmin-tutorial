@@ -2,36 +2,38 @@ require "gimliv.jazz"
 
 export
 fn jazz_sboxv(reg ptr u32[12] state) -> reg ptr u32[12] {
-  reg u128 x y z;
+    reg ptr u128[3] st = state;
 
-  x = state.[u128 16 * 0];
-  y = state.[u128 16 * 1];
-  z = state.[u128 16 * 2];
+    reg u128 x = st[0];
+    reg u128 y = st[1];
+    reg u128 z = st[2];
 
-  #inline (x,y,z) = sboxv(x,y,z);
+    #inline x, y, z = sboxv(x, y, z);
 
-  state.[u128 16 * 0] = x;
-  state.[u128 16 * 1] = y;
-  state.[u128 16 * 2] = z;
+    st[0] = x;
+    st[1] = y;
+    st[2] = z;
 
-  return state;
+    state = st;
+    return state;
 }
 
 export
 fn jazz_small_swapv(reg u128 x) -> reg u128 {
-  #inline x = small_swapv(x);
-  return x;
+    #inline x = small_swapv(x);
+    return x;
 }
 
 export
 fn jazz_big_swapv(reg u128 x) -> reg u128 {
-  #inline x = big_swapv(x);
-  return x;
+    x = x;
+    #inline x = big_swapv(x);
+    return x;
 }
 
 export
 fn jazz_gimliv(reg ptr u32[12] state) -> reg ptr u32[12] {
-  state = state;
-  #inline state = gimliv(state);
-  return state;
+    state = state;
+    #inline state = gimliv(state);
+    return state;
 }

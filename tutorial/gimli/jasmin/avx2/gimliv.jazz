@@ -41,7 +41,14 @@ fn big_swapv(reg u128 x) -> reg u128 {
    that you should not read or write to one of the arrays (a or b) after you
    modify the other (b or a). If the compiler can't do everything in-place, it
    will complain. After you are done using a, you can do b = a and unify the
-   arrays again. */
+   arrays again.
+
+   To write a 32 bit constant in a 128 bit register, you need to write the
+   constant in a 32 bit register and then do a MOV (it zero extends the 32 bit
+   value).
+   The syntax for casts is
+       x = (128u)m
+   where x is the 128 bit variable and m the 32 bit one. */
 fn gimliv(reg ptr u32[12] state) -> reg ptr u32[12] {
     reg ptr u128[3] st;
     st = state; // Semantically, this is a deep copy of all the elements of the

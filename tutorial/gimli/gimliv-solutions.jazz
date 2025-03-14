@@ -8,18 +8,23 @@ fn shift(reg u128 x, inline int count) -> reg u128 {
 }
 
 inline
-fn rotate(reg u128 r, inline int count) -> reg u128 {
+fn rotate(reg u128 x, inline int count) -> reg u128 {
+    reg u128 r;
     if (count == 24) {
-        r = #VPSHUFB(r, rotate24pattern);
+        r = #VPSHUFB(x, rotate24pattern);
     } else {
-        reg u128 a = shift(r, count);
+        r = shift(x, count);
         count = 32 - count;
-        reg u128 b = #VPSRL_4u32(r, count);
-        r = a ^ b;
+        reg u128 a = #VPSRL_4u32(x, count);
+        r ^= a;
     }
     return r;
 }
 
+/* AVX and AVX instructions don't overwrite their first argument so we can
+   have
+       x = y + z
+   without overwriting y. */
 fn sboxv(reg u128 x y z) -> reg u128, reg u128, reg u128 {
     x = rotate(x, 24);
     y = rotate(y, 9);
@@ -56,42 +61,35 @@ fn big_swapv(reg u128 x) -> reg u128 {
     return x;
 }
 
-
-inline
 fn gimli_body(reg u128 x y z) -> reg u128, reg u128, reg u128 {
     inline int round;
     for round = 24 downto 0 {
-        #inline (x, y, z) = sboxv(x, y, z);
+        #inline x, y, z = sboxv(x, y, z);
 
-        if (round % 4) == 0 { // small swap: pattern s...s...s... etc.
+        if (round % 4 == 0) {
             #inline x = small_swapv(x);
         }
 
-        if (round % 4) == 2 { // big swap: pattern ..S...S...S. etc.
+        if (round % 4 == 2) {
             #inline x = big_swapv(x);
         }
 
-        if (round % 4) == 0 { // add constant: pattern c...c...c... etc.
-            reg u32 m = 0x9e377900 +32u round;
+        if (round % 4 == 0) {
+            reg u32 m = 0x9e377900 + round;
             reg u128 a = (128u)m;
             x ^= a;
         }
-
     }
 
     return x, y, z;
 }
 
 fn gimliv(reg ptr u32[12] state) -> reg ptr u32[12] {
-    reg u128 x = state.[u128 16 * 0];
-    reg u128 y = state.[u128 16 * 1];
-    reg u128 z = state.[u128 16 * 2];
+    reg ptr u128[3] st = state;
 
-    x, y, z = gimli_body(x, y, z);
+    // The compiler introduces six extra assignments.
+    #inline st[0], st[1], st[2] = gimli_body(st[0], st[1], st[2]);
 
-    state.[u128 16 * 0] = x;
-    state.[u128 16 * 1] = y;
-    state.[u128 16 * 2] = z;
-
+    state = st;
     return state;
 }

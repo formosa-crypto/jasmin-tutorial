@@ -1,3 +1,9 @@
+inline
+fn rotate(reg u32 x, inline int bits) -> reg u32 {
+    x <<r= bits;
+    return x;
+}
+
 fn sbox1(reg u32 x y z) -> reg u32 {
     reg u32 b = z;
     b <<= 1;
@@ -30,19 +36,13 @@ fn sbox3(reg u32 x y z) -> reg u32 {
     return a;
 }
 
-inline
-fn rol(reg u32 x, inline int bits) -> reg u32 {
-    x <<r= bits;
-    return x;
-}
-
 fn sbox(reg ptr u32[12] state, reg u64 column) -> reg ptr u32[12] {
 
     reg u32 x = state[0 + column];
-    x = rol(x, 24);
+    x = rotate(x, 24);
 
     reg u32 y = state[4 + column];
-    y = rol(y, 9);
+    y = rotate(y, 9);
 
     reg u32 z = state[8 + column];
 
@@ -88,25 +88,24 @@ fn big_swap(reg ptr u32[12] state) -> reg ptr u32[12] {
     return state;
 }
 
+/* Sometimes, inlining function calls makes the code go faster. */
 fn gimli(reg ptr u32[12] state) -> reg ptr u32[12] {
     inline int round;
     for round = 24 downto 0 {
         inline int column;
         for column = 0 to 4 {
-            reg u64 tmp = column;
-
-            #inline state = sbox(state, tmp);
+            #inline state = sbox(state, column);
         }
 
-        if (round % 4 == 0) { // small swap: pattern s...s...s...
+        if (round % 4 == 0) {
             #inline state = small_swap(state);
         }
 
-        if (round % 4 == 2) { // big swap: pattern ..S...S...S...
+        if (round % 4 == 2) {
             #inline state = big_swap(state);
         }
 
-        if (round % 4 == 0) { // add constant: pattern c...c...c...
+        if (round % 4 == 0) {
             state[0] ^= round + 0x9e377900;
         }
     }
