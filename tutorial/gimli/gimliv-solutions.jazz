@@ -14,8 +14,7 @@ fn rotate(reg u128 x, inline int count) -> reg u128 {
         r = #VPSHUFB(x, rotate24pattern);
     } else {
         r = shift(x, count);
-        count = 32 - count;
-        reg u128 a = #VPSRL_4u32(x, count);
+        reg u128 a = #VPSRL_4u32(x, 32 - count);
         r ^= a;
     }
     return r;

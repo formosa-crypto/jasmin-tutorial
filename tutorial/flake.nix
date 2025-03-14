@@ -14,7 +14,6 @@
       stdenv.mkDerivation {
         name = "jasmin-tutorial";
         src = self;
-        NIX_CFLAGS_COMPILE = "-march=native -mavx2";
         buildInputs = [
           jasmin-compiler
           gcc clang-tools valgrind
@@ -23,6 +22,8 @@
         ];
         buildPhase = "";
         installPhase = "touch $out";
+        NIX_CFLAGS_COMPILE = "-march=native -mavx2";
+        EC_IDIRS="./extraction;Jasmin:./eclib"; # Proof General
       };
   };
 }

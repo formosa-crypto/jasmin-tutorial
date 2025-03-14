@@ -1,5 +1,6 @@
+require import List Int.
+from Jasmin require import JWord JModel_x86.
 require Gimli_avx Gimli_x86.
-import List Int JWord JModel_x86.
 
 import Array12.
 
@@ -19,6 +20,6 @@ proof.
   proc; inline *; wp.
   while (={round} /\ eqstate (x{1}, y{1}, z{1}) state{2}); auto.
   unroll for{2} ^while; wp; skip => />.
-  by rewrite !/VPSHUFD_128 !/VPSHUFD_128_B /= zeroextu128E.
+  rewrite /VPSHUFD_128 /VPSHUFD_128_B /= zeroextu128E.
 qed.
 

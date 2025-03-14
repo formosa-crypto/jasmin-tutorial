@@ -37,54 +37,39 @@ fn sbox3(reg u32 x y z) -> reg u32 {
 }
 
 fn sbox(reg ptr u32[12] state, reg u64 column) -> reg ptr u32[12] {
+    // The compiler introduces an extra assignment for each following line.
+    reg u32 x = rotate(state[column], 24);
+    reg u32 y = rotate(state[column + 4], 9);
+    reg u32 z = state[column + 8];
 
-    reg u32 x = state[0 + column];
-    x = rotate(x, 24);
-
-    reg u32 y = state[4 + column];
-    y = rotate(y, 9);
-
-    reg u32 z = state[8 + column];
-
-    #inline
-    reg u32 s1 = sbox1(x, y, z);
-    state[8 + column] = s1;
-
-    #inline
-    reg u32 s2 = sbox2(x, y, z);
-    state[4 + column] = s2;
-
-    #inline
-    reg u32 s3 = sbox3(x, y, z);
-    state[0 + column] = s3;
+    #inline state[column + 8] = sbox1(x, y, z);
+    #inline state[column + 4] = sbox2(x, y, z);
+    #inline state[column] = sbox3(x, y, z);
 
     return state;
 }
 
 fn small_swap(reg ptr u32[12] state) -> reg ptr u32[12] {
     reg u32 x = state[0];
-    reg u32 y = state[1];
-    state[0] = y;
-    state[1] = x;
+    x, state[1] = #swap(x, state[1]); // Uses the XCHG instruction.
+    state[0] = x;
 
     x = state[2];
-    y = state[3];
-    state[2] = y;
-    state[3] = x;
+    x, state[3] = #swap(x, state[3]);
+    state[2] = x;
 
     return state;
 }
 
 fn big_swap(reg ptr u32[12] state) -> reg ptr u32[12] {
     reg u32 x = state[0];
-    reg u32 y = state[2];
-    state[0] = y;
-    state[2] = x;
+    x, state[2] = #swap(x, state[2]);
+    state[0] = x;
 
     x = state[1];
-    y = state[3];
-    state[1] = y;
-    state[3] = x;
+    x, state[3] = #swap(x, state[3]);
+    state[1] = x;
+
     return state;
 }
 
@@ -94,6 +79,7 @@ fn gimli(reg ptr u32[12] state) -> reg ptr u32[12] {
     for round = 24 downto 0 {
         inline int column;
         for column = 0 to 4 {
+            // The compiler introduces an extra assignment for column.
             #inline state = sbox(state, column);
         }
 
