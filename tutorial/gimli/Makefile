@@ -8,6 +8,8 @@ default: run
 	clean
 	test
 	check
+	format
+	valgrind
 
 run:
 	$(MAKE) -C $(TEST_DIR) run
@@ -23,6 +25,12 @@ check:
 
 jazz:
 	$(MAKE) -C $(JAZZ_DIR) all
+
+format:
+	$(MAKE) -C $(TEST_DIR) format
+
+valgrind:
+	$(MAKE) -C $(TEST_DIR) valgrind
 
 clean:
 	@$(MAKE) -C $(JAZZ_DIR) clean

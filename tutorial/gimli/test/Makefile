@@ -37,7 +37,7 @@ VALGRIND_FLAGS += \
 
 .PHONY:
 	clean
-	lint
+	format
 	run
 	valgrind
 	all
@@ -54,7 +54,7 @@ $(JAZZ_ASM_AVX): $(JAZZ_SOURCES_AVX)
 
 all: $(OUT)
 
-lint:
+format:
 	clang-format -i $(TEST_SOURCES) $(TEST_HEADERS)
 
 run: $(SOURCES) $(HEADERS) $(JAZZ_ASM) $(JAZZ_ASM_AVX) $(OUT)

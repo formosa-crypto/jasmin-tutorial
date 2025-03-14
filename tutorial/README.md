@@ -1,19 +1,5 @@
 # Jasmin tutorial
 
-
-## Speaker
-
-Santiago Arranz Olmos
-Max Planck Institute for Security and Privacy
-santiago.arranz-olmos@mpi-sp.org
-
-Miguel Miranda Quaresma
-Max Planck Institute for Security and Privacy
-miguel.quaresma@mpi-sp.org
-
-
-## Abstract
-
 Jasmin is a programming language designed to implement low-level, high-speed,
 high-assurance cryptography.
 It provides a high degree of control over the generated assembly, allowing
@@ -66,22 +52,103 @@ Using these as examples, we will see how:
   of leakage (just branches, cache, operators) and execution (sequential and
   different variants of speculation).
 
-### Requirements/Prerequisites
+
+## Requirements and Prerequisites
+
 Attendees are expected to be familiar with the C programming language.
 
-Additionally, in order to speed-up the setup process, Docker should be [installed](https://www.docker.com/get-started/)
-prior to the tutorial[1] and the following (Docker) image pulled: [miguelmirq/jasmin101](https://hub.docker.com/r/miguelmirq/jasmin101).
+Additionally, in order to speed-up the setup process, Docker should be
+installed [docker.com/get-started](https://www.docker.com/get-started/)
+prior to the tutorial [1] and the following (Docker) image pulled:
+[miguelmirq/jasmin101](https://hub.docker.com/r/miguelmirq/jasmin101).
 
-[1] On ARM-based Macbooks, make sure the following options are set in the Docker settings:
-- General -> Use Virtualization Framework 
-- General -> VirtioFS 
+[1] On ARM-based Macbooks, make sure the following options are set in the Docker
+settings:
+- General -> Use Virtualization Framework
+- General -> VirtioFS
 - General -> Use Rosetta for x86/amd64 emulation on Apple Silicon
 
-## Demographic
 
-Cryptographic implementors.
+## Contents
+
+The artifact is structured as follows:
+- `gimli/c/ref`: C reference implementation of Gimli for x86-64
+- `gimli/c/avx2`: C optimized implementation of Gimli for x86-64
+- `gimli/jasmin/ref`: Jasmin implementation of Gimli for x86-64 (exercise)
+- `gimli/jasmin/avx2`: Jasmin optimized implementation of Gimli for x86-64
+  (exercise)
+- `gimli/test`: test framework for Jasmin implementations of Gimli
+- `gimli/proof`: Easycrypt proofs of equivalence and constant time for Jasmin
+  implementations of Gimli
 
 
-## Logistical requirements
+## Setting up Jasmin & Easycrypt
 
-Big screen for demo.
+### Using Docker
+
+This artifact contains a Dockerfile which sets up a container with
+Jasmi and Easycrypt along with the contents of the artifact. For information on
+the installation of Docker see
+[docs.docker.com/get-docker](https://docs.docker.com/get-docker/).
+
+To setup Easycrypt using Docker, run:
+
+```shell
+$ docker build -t jasmin101 .
+```
+
+And then
+
+```shell
+$ docker run -it jasmin101
+```
+
+### Using Flakes
+
+Run
+
+```shell
+$ nix develop --profile env
+```
+
+and you will be in a shell with the dependencies installed. You can exit the
+shell with `exit`. To enter the shell afterwards (and avoid downloading all the
+dependencies again), use
+
+```shell
+$ nix develop ./env
+```
+
+### Other alternatives
+
+Alternatively, you can install the dependencies yourself. You need
+- gcc
+- jasmin-compiler (see
+  [github.com/jasmin-lang/jasmin](https://github.com/jasmin-lang/jasmin), there
+  are opam and debian packages)
+- easycrypt (only if you want to use it) (see
+  [github.com/EasyCrypt/easycrypt](https://github.com/EasyCrypt/easycrypt),
+  needs with why3, z3, alt-ergo, and cvc4)
+- clang-tools (only if you want to use it)
+- valgrind (only if you want to use it)
+
+Note that you need to use AVX2 instructions so you may have to do some extra
+configuration.
+
+
+## Running the artifact
+
+In the `gimli` directory there is a Makefile with the following targets:
+- `$ make run`: runs the test suite for the reference and optimized
+  implementations of Gimli
+- `$ make run-ref`: runs the test suite for the reference implementation of
+  Gimli
+- `$ make run-avx`: runs the test suite for the optimized implementation of
+  Gimli
+- `$ make check`: checks the Eascrypt proofs of equivalence and constant time
+  for Gimli
+- `$ make jazz`: compiles the Jasmin implementations of Gimli
+- `$ make clean`: cleans the build files in all the subdirectories
+  (`gimli/jazz`, `gimli/test`, `gimli/proof`)
+- `$ make format`: formats the C part of the code
+- `$ make valgrind`: runs valgrind on the test suite

@@ -12,13 +12,13 @@
 #include <x86intrin.h>
 
 #include "gimli.h"
-#include "jazz_gimli.h"
 #include "gimliv.h"
+#include "jazz_gimli.h"
 #include "jazz_gimliv.h"
 #include "random.h"
 
-#define FILL_LANE(lane0, lane1) \
-  lane0 = rand_m128i(); \
+#define FILL_LANE(lane0, lane1)                                                \
+  lane0 = rand_m128i();                                                        \
   lane1 = lane0;
 
 #define GIMLI_N 12
@@ -152,17 +152,17 @@ int test_gimli(void) {
 }
 
 static void store_statev(statev sv, uint32_t *state) {
-  _mm_storeu_si128((void *) (state + 0),sv.x);
-  _mm_storeu_si128((void *) (state + 4),sv.y);
-  _mm_storeu_si128((void *) (state + 8),sv.z);
+  _mm_storeu_si128((void *)(state + 0), sv.x);
+  _mm_storeu_si128((void *)(state + 4), sv.y);
+  _mm_storeu_si128((void *)(state + 8), sv.z);
 }
 
 static statev load_statev(uint32_t *state) {
   statev sv;
 
-  sv.x = _mm_loadu_si128((void *) (state + 0));
-  sv.y = _mm_loadu_si128((void *) (state + 4));
-  sv.z = _mm_loadu_si128((void *) (state + 8));
+  sv.x = _mm_loadu_si128((void *)(state + 0));
+  sv.y = _mm_loadu_si128((void *)(state + 4));
+  sv.z = _mm_loadu_si128((void *)(state + 8));
 
   return sv;
 }
@@ -192,7 +192,7 @@ int test_sboxv(void) {
 
 int cmp_lanes(__m128i a, __m128i b) {
   __m128i r = _mm_xor_si128(a, b);
- return _mm_test_all_zeros(r, r);
+  return _mm_test_all_zeros(r, r);
 }
 
 int test_small_swapv(void) {
@@ -211,8 +211,8 @@ int test_small_swapv(void) {
     jazzh_lane = _mm_extract_epi64(jazz_lane, 1);
     printf("ERROR:\n");
     printf("  small_swapv\n");
-    printf("  C = %#018"PRIx64"%016"PRIx64" \n", ch_lane, cl_lane);
-    printf("  JAZZ = %#018"PRIx64"%016"PRIx64"\n", jazzh_lane, jazzl_lane);
+    printf("  C = %#018" PRIx64 "%016" PRIx64 " \n", ch_lane, cl_lane);
+    printf("  JAZZ = %#018" PRIx64 "%016" PRIx64 "\n", jazzh_lane, jazzl_lane);
     return 1;
   }
 
@@ -234,8 +234,8 @@ int test_big_swapv(void) {
     jazzh_lane = _mm_extract_epi64(jazz_lane, 1);
     printf("ERROR:\n");
     printf("  big_swapv\n");
-    printf("  C = %#018"PRIx64"%016"PRIx64" \n", ch_lane, cl_lane);
-    printf("  JAZZ = %#018"PRIx64"%016"PRIx64"\n", jazzh_lane, jazzl_lane);
+    printf("  C = %#018" PRIx64 "%016" PRIx64 " \n", ch_lane, cl_lane);
+    printf("  JAZZ = %#018" PRIx64 "%016" PRIx64 "\n", jazzh_lane, jazzl_lane);
     return 1;
   }
 
@@ -251,7 +251,6 @@ int test_gimliv(void) {
 
   return cmp_states(c_state, jazz_state, "gimli(...)\n");
 }
-
 
 void init_tests(unsigned int seed) {
   if (0 == seed) {
@@ -271,9 +270,15 @@ int (*test_funcs[TEST_NUM])(void) = {
 };
 
 char *test_namesv[TEST_NUMV] = {
-  "sboxv", "small_swapv", "big_swapv", "gimliv",
+    "sboxv",
+    "small_swapv",
+    "big_swapv",
+    "gimliv",
 };
 
 int (*test_funcsv[TEST_NUMV])(void) = {
-  test_sboxv, test_small_swapv, test_big_swapv, test_gimliv,
+    test_sboxv,
+    test_small_swapv,
+    test_big_swapv,
+    test_gimliv,
 };

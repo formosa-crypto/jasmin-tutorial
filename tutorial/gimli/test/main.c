@@ -20,7 +20,7 @@ void print_help(char *name) {
   }
 
   printf("If AVX then TESTNUM can be\n");
-  for (int i = 0; i < TEST_NUMV; i ++) {
+  for (int i = 0; i < TEST_NUMV; i++) {
     printf("  %d: only %s\n", i + 1, test_namesv[i]);
   }
 
@@ -59,28 +59,29 @@ int main(int argn, char **argv) {
 
   int testt = (int)strtol(argv[1], NULL, 10);
 
-  if(testt == 0) {
+  if (testt == 0) {
     printf("BEGIN TESTING\n");
     init_tests(0);
     printf("\n");
 
-    for (int i = 0; i < TEST_NUM; i++){
-        run_test(i);
+    for (int i = 0; i < TEST_NUM; i++) {
+      run_test(i);
     }
 
-    for (int i = 0; i < TEST_NUMV; i++){
-        run_testv(i);
+    for (int i = 0; i < TEST_NUMV; i++) {
+      run_testv(i);
     }
 
     return EXIT_SUCCESS;
-  } else if(argn != 3) {
+  } else if (argn != 3) {
     print_help(argv[0]);
     return EXIT_FAILURE;
   }
 
   int testn = (int)strtol(argv[2], NULL, 10);
 
-  if (testn < 0 || (testt == 1 && TEST_NUM <= testn) || (testt == 2 && TEST_NUMV <= testn)) {
+  if (testn < 0 || (testt == 1 && TEST_NUM <= testn) ||
+      (testt == 2 && TEST_NUMV <= testn)) {
     print_help(argv[0]);
     printf("ERROR: %d out of range\n", testn);
     return EXIT_FAILURE;

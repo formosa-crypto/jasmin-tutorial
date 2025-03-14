@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <x86intrin.h>
 
-
 #if RAND_MAX / 256 >= 0xFFFFFFFFFFFFFF
 #define RAND_UINT64_LOOP_COUNT 1
 #elif RAND_MAX / 256 >= 0xFFFFFF
