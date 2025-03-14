@@ -1,10 +1,19 @@
 /* The Jasmin intrinsics you need are:
-     VPSLL_4u32
-     VPSRL_4u32
-     VPSHUFB
-     VPSHUFD
-   More information at
-     intel.com/content/www/us/en/docs/intrinsics-guide/index.html. */
+       VPSLL_4u32 (the psll instruction)
+       VPSRL_4u32 (the psrl instruction)
+       VPSHUFB (the pshufb instruction)
+       VPSHUFD (the pshufd instruction)
+   Search the functions from the C file in
+       intel.com/content/www/us/en/docs/intrinsics-guide/index.html.
+   Intel syntax (i.e., what you will see in the website) has suffixes for the
+   different sizes of the operands (e.g., q for 64 bits, d for 32 bits, h for 16
+   bits, and so on).
+   Jasmin does *not* take these suffixes: it expects an underscore and then
+   numbers.
+   Additionally, the names of all vectorized instructions in Jasmin start with a
+   V.
+   You can check the types and semantics of x86 instructions at
+       felixcloutier.com/x86/index.html. */
 
 /* The compiler will place this 128 bit word in the .data section of the binary.
    Instead of using decimal or hexadecimal, we describe the constant byte by
@@ -13,11 +22,11 @@ u128 rotate24pattern =
     (16u8)[ 12, 15, 14, 13, 8, 11, 10, 9, 4, 7, 6, 5, 0, 3, 2, 1 ];
 
 fn sboxv(reg u128 x y z) -> reg u128, reg u128, reg u128 {
-    return (x, y, z);
+    return x, y, z;
 }
 
 /* You need to pass an immediate to the instruction, you can write it
-   element-wise as (4u2)[2, 3, 0, 1] */
+   element-wise as (4u2)[2, 3, 0, 1]. */
 fn small_swapv(reg u128 x) -> reg u128 {
     return x;
 }
@@ -26,6 +35,20 @@ fn big_swapv(reg u128 x) -> reg u128 {
     return x;
 }
 
+/* Arrays in Jasmin are functional. That is, a = b morally makes a deep copy of
+   b, not just a reference copy. However, since this is very inefficient, the
+   compiler will try to avoid the copy and do everything in-place. This means
+   that you should not read or write to one of the arrays (a or b) after you
+   modify the other (b or a). If the compiler can't do everything in-place, it
+   will complain. After you are done using a, you can do b = a and unify the
+   arrays again. */
 fn gimliv(reg ptr u32[12] state) -> reg ptr u32[12] {
+    reg ptr u128[3] st;
+    st = state; // Semantically, this is a deep copy of all the elements of the
+                // array. But the compiler realizes that it can do everything
+                // in-place because you won't use state after this.
+
+    state = st; // We must return the pointer **we received** since we modified
+                // the contents.
     return state;
 }

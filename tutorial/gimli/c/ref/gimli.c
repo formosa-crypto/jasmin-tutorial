@@ -80,7 +80,7 @@ extern void gimli(uint32_t *state) {
     }
 
     if ((round & 3) == 0) { // add constant: pattern c...c...c... etc.
-      state[0] ^= (0x9e377900 | round);
+      state[0] ^= (0x9e377900 + round);
     }
   }
 }
