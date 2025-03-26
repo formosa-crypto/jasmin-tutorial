@@ -68,6 +68,7 @@ settings:
 - General -> VirtioFS
 - General -> Use Rosetta for x86/amd64 emulation on Apple Silicon
 
+> For more details on Jasmin, refer to the  documentation: [Jasmin Documentation](https://lyonel2017.github.io/jasmin-doc/).
 
 ## Contents
 
