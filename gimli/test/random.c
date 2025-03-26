@@ -2,7 +2,6 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <x86intrin.h>
 
 #if RAND_MAX / 256 >= 0xFFFFFFFFFFFFFF
 #define RAND_UINT64_LOOP_COUNT 1
@@ -50,6 +49,9 @@ uint64_t rand_uint64_between(uint64_t lo, uint64_t hi) {
   return x + lo;
 }
 
+#ifdef AVX_SUPPORT
+#include <x86intrin.h>
+
 __m128i rand_m128i(void) {
   __m128i r = _mm_setzero_si128();
   uint64_t x;
@@ -61,6 +63,7 @@ __m128i rand_m128i(void) {
 
   return r;
 }
+#endif
 
 uint32_t rand_uint32(void) { return (uint32_t)rand_uint64(); }
 

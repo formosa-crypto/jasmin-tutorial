@@ -9,12 +9,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <x86intrin.h>
 
 #include "gimli.h"
-#include "gimliv.h"
 #include "jazz_gimli.h"
-#include "jazz_gimliv.h"
 #include "random.h"
 
 #define FILL_LANE(lane0, lane1)                                                \
@@ -151,6 +148,28 @@ int test_gimli(void) {
   return cmp_states(c_state, jazz_state, "gimli(...)\n");
 }
 
+void init_tests(unsigned int seed) {
+  if (0 == seed) {
+    seed = (unsigned int)time(NULL);
+  }
+  printf("seed = %d\n", seed);
+  srand(seed);
+}
+
+char *test_names[TEST_NUM] = {
+  "sbox1", "sbox2", "sbox3", "sbox", "small_swap", "big_swap", "gimli",
+};
+
+int (*test_funcs[TEST_NUM])(void) = {
+  test_sbox1,      test_sbox2,    test_sbox3, test_sbox,
+  test_small_swap, test_big_swap, test_gimli,
+};
+
+#ifdef AVX_SUPPORT
+#include <x86intrin.h>
+#include "gimliv.h"
+#include "jazz_gimliv.h"
+
 static void store_statev(statev sv, uint32_t *state) {
   _mm_storeu_si128((void *)(state + 0), sv.x);
   _mm_storeu_si128((void *)(state + 4), sv.y);
@@ -252,33 +271,17 @@ int test_gimliv(void) {
   return cmp_states(c_state, jazz_state, "gimli(...)\n");
 }
 
-void init_tests(unsigned int seed) {
-  if (0 == seed) {
-    seed = (unsigned int)time(NULL);
-  }
-  printf("seed = %d\n", seed);
-  srand(seed);
-}
-
-char *test_names[TEST_NUM] = {
-    "sbox1", "sbox2", "sbox3", "sbox", "small_swap", "big_swap", "gimli",
-};
-
-int (*test_funcs[TEST_NUM])(void) = {
-    test_sbox1,      test_sbox2,    test_sbox3, test_sbox,
-    test_small_swap, test_big_swap, test_gimli,
-};
-
 char *test_namesv[TEST_NUMV] = {
-    "sboxv",
-    "small_swapv",
-    "big_swapv",
-    "gimliv",
+  "sboxv",
+  "small_swapv",
+  "big_swapv",
+  "gimliv",
 };
 
 int (*test_funcsv[TEST_NUMV])(void) = {
-    test_sboxv,
-    test_small_swapv,
-    test_big_swapv,
-    test_gimliv,
+  test_sboxv,
+  test_small_swapv,
+  test_big_swapv,
+  test_gimliv,
 };
+#endif
