@@ -14,12 +14,14 @@
 #include "jazz_gimli.h"
 #include "random.h"
 
-#define FILL_LANE(lane0, lane1)                                                \
-  lane0 = rand_m128i();                                                        \
-  lane1 = lane0;
-
 #define GIMLI_N 12
 #define GIMLI_BYTES (GIMLI_N * sizeof(uint32_t))
+#define ITERATIONS 10000
+
+typedef struct Test {
+  int (*test)();
+  const char *name;
+} Test;
 
 int test_sbox1(void) {
   uint32_t x = rand_uint32();
@@ -156,19 +158,46 @@ void init_tests(unsigned int seed) {
   srand(seed);
 }
 
-char *test_names[TEST_NUM] = {
-  "sbox1", "sbox2", "sbox3", "sbox", "small_swap", "big_swap", "gimli",
-};
+int run_tests(Test *tests, int num_tests) {
+  int res = 0;
+  for (int i = 0; i < num_tests; i++) {
+    printf("Testing %s:\n", tests[i].name);
+    for (int j = 0; j < ITERATIONS && 0 == res; j++) {
+      res = tests[i].test();
+    }
+    if (res) {
+      printf("FAILED\n");
+      return res;
+    }
+    printf("SUCCESS\n");
+    printf("\n");
+  }
+  return res;
+}
 
-int (*test_funcs[TEST_NUM])(void) = {
-  test_sbox1,      test_sbox2,    test_sbox3, test_sbox,
-  test_small_swap, test_big_swap, test_gimli,
-};
+int test_ref() {
+  Test tests[] = {
+     {test_sbox1, "test_sbox1"}
+    ,{test_sbox2, "test_sbox2"}
+    ,{test_sbox3, "test_sbox3"}
+    ,{test_sbox, "test_sbox"}
+    ,{test_small_swap, "test_small_swap"}
+    ,{test_big_swap, "test_big_swap"}
+    ,{test_gimli, "test_gimli"}
+  };
+  int num_tests = sizeof(tests) / sizeof(Test);
+  return run_tests(tests, num_tests);
+}
+
 
 #ifdef AVX_SUPPORT
 #include <x86intrin.h>
 #include "gimliv.h"
 #include "jazz_gimliv.h"
+
+#define FILL_LANE(lane0, lane1)                                                \
+  lane0 = rand_m128i();                                                        \
+  lane1 = lane0;
 
 static void store_statev(statev sv, uint32_t *state) {
   _mm_storeu_si128((void *)(state + 0), sv.x);
@@ -271,17 +300,15 @@ int test_gimliv(void) {
   return cmp_states(c_state, jazz_state, "gimli(...)\n");
 }
 
-char *test_namesv[TEST_NUMV] = {
-  "sboxv",
-  "small_swapv",
-  "big_swapv",
-  "gimliv",
-};
+int test_avx() {
+  Test tests[] = {
+    {test_sboxv, "test_sboxv"}
+   ,{test_small_swapv, "test_small_swapv"}
+   ,{test_big_swapv, "test_big_swapv"}
+   ,{test_gimliv, "test_gimliv"}
+  };
+  int num_tests = sizeof(tests) / sizeof(Test);
+  return run_tests(tests, num_tests);
+}
 
-int (*test_funcsv[TEST_NUMV])(void) = {
-  test_sboxv,
-  test_small_swapv,
-  test_big_swapv,
-  test_gimliv,
-};
 #endif
