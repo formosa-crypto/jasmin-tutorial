@@ -68,6 +68,7 @@ settings:
 - General -> VirtioFS
 - General -> Use Rosetta for x86/amd64 emulation on Apple Silicon
 
+> For more details on Jasmin, refer to the official documentation: [Jasmin Documentation](https://lyonel2017.github.io/jasmin-doc/).
 
 ## Contents
 
@@ -135,6 +136,12 @@ Alternatively, you can install the dependencies yourself. You need
 Note that you need to use AVX2 instructions so you may have to do some extra
 configuration.
 
+## Compiler flags
+
+Here is a list of useful compiler flags:
+- `-slice [f]`: compiles only the function `[f]` and everything it depends on. This is useful when focusing on a specific function instead of compiling the entire file. It can also be used with the constant-time checker.
+- `-help-intrinsics`: lists all available intrinsic operators for the compiler version being used. This helps check which intrinsics are supported.
+- `-g`: emit DWARF2 debugging information, allowing the use of debuggers like GDB to inspect and step through the Jasmin code.
 
 ## Running the artifact
 
