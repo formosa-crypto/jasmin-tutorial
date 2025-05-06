@@ -3,14 +3,7 @@
 
 // If `seed` is 0 we take `time(NULL)`.
 void init_tests(unsigned int seed);
-
-// Number of tests.
-#define TEST_NUM 7
-extern char *test_names[TEST_NUM];
-extern int (*test_funcs[TEST_NUM])(void);
-
-#define TEST_NUMV 4
-extern char *test_namesv[TEST_NUMV];
-extern int (*test_funcsv[TEST_NUMV])(void);
+int test_ref(void);
+int test_avx(void);
 
 #endif

@@ -60,13 +60,13 @@ format:
 	clang-format -i $(TEST_SOURCES) $(TEST_HEADERS)
 
 run: $(SOURCES) $(HEADERS) $(JAZZ_ASM) $(JAZZ_ASM_AVX) $(OUT)
-	./$(OUT) 0 $(TESTN)
+	./$(OUT) 0
 
 run-ref: $(SOURCES) $(HEADERS) $(JAZZ_ASM_AVX) $(OUT)
-	./$(OUT) 1 $(TESTN)
+	./$(OUT) 1
 
 run-avx: $(SOURCES) $(HEADERS) $(JAZZ_ASM_AVX) $(OUT)
-	./$(OUT) 2 $(TESTN)
+	./$(OUT) 2
 
 valgrind: $(OUT)
 	$(VALGRIND) $(VALGRIND_FLAGS) ./$(OUT) $(TESTN)
