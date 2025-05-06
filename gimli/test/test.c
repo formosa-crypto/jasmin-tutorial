@@ -9,17 +9,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <x86intrin.h>
 
 #include "gimli.h"
-#include "gimliv.h"
 #include "jazz_gimli.h"
-#include "jazz_gimliv.h"
 #include "random.h"
-
-#define FILL_LANE(lane0, lane1)                                                \
-  lane0 = rand_m128i();                                                        \
-  lane1 = lane0;
 
 #define GIMLI_N 12
 #define GIMLI_BYTES (GIMLI_N * sizeof(uint32_t))
@@ -157,6 +150,55 @@ int test_gimli(void) {
   return cmp_states(c_state, jazz_state, "gimli(...)\n");
 }
 
+void init_tests(unsigned int seed) {
+  if (0 == seed) {
+    seed = (unsigned int)time(NULL);
+  }
+  printf("seed = %d\n", seed);
+  srand(seed);
+}
+
+int run_tests(Test *tests, int num_tests) {
+  int res = 0;
+  for (int i = 0; i < num_tests; i++) {
+    printf("Testing %s:\n", tests[i].name);
+    for (int j = 0; j < ITERATIONS && 0 == res; j++) {
+      res = tests[i].test();
+    }
+    if (res) {
+      printf("FAILED\n");
+      return res;
+    }
+    printf("SUCCESS\n");
+    printf("\n");
+  }
+  return res;
+}
+
+int test_ref() {
+  Test tests[] = {
+     {test_sbox1, "test_sbox1"}
+    ,{test_sbox2, "test_sbox2"}
+    ,{test_sbox3, "test_sbox3"}
+    ,{test_sbox, "test_sbox"}
+    ,{test_small_swap, "test_small_swap"}
+    ,{test_big_swap, "test_big_swap"}
+    ,{test_gimli, "test_gimli"}
+  };
+  int num_tests = sizeof(tests) / sizeof(Test);
+  return run_tests(tests, num_tests);
+}
+
+
+#ifdef AVX_SUPPORT
+#include <x86intrin.h>
+#include "gimliv.h"
+#include "jazz_gimliv.h"
+
+#define FILL_LANE(lane0, lane1)                                                \
+  lane0 = rand_m128i();                                                        \
+  lane1 = lane0;
+
 static void store_statev(statev sv, uint32_t *state) {
   _mm_storeu_si128((void *)(state + 0), sv.x);
   _mm_storeu_si128((void *)(state + 4), sv.y);
@@ -258,45 +300,6 @@ int test_gimliv(void) {
   return cmp_states(c_state, jazz_state, "gimli(...)\n");
 }
 
-void init_tests(unsigned int seed) {
-  if (0 == seed) {
-    seed = (unsigned int)time(NULL);
-  }
-  printf("seed = %d\n", seed);
-  srand(seed);
-}
-
-int run_tests(Test *tests, int num_tests) {
-  int res = 0;
-  for (int i = 0; i < num_tests; i++) {
-    printf("Testing %s:\n", tests[i].name);
-    for (int j = 0; j < ITERATIONS && 0 == res; j++) {
-      res = tests[i].test();
-    }
-    if (res) {
-      printf("FAILED\n");
-      return res;
-    }
-    printf("SUCCESS\n");
-    printf("\n");
-  }
-  return res;
-}
-
-int test_ref() {
-  Test tests[] = {
-     {test_sbox1, "test_sbox1"}
-    ,{test_sbox2, "test_sbox2"}
-    ,{test_sbox3, "test_sbox3"}
-    ,{test_sbox, "test_sbox"}
-    ,{test_small_swap, "test_small_swap"}
-    ,{test_big_swap, "test_big_swap"}
-    ,{test_gimli, "test_gimli"}
-  };
-  int num_tests = sizeof(tests) / sizeof(Test);
-  return run_tests(tests, num_tests);
-}
-
 int test_avx() {
   Test tests[] = {
     {test_sboxv, "test_sboxv"}
@@ -307,3 +310,5 @@ int test_avx() {
   int num_tests = sizeof(tests) / sizeof(Test);
   return run_tests(tests, num_tests);
 }
+
+#endif
