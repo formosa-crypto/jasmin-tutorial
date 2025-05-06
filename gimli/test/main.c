@@ -28,10 +28,10 @@ int main(int argn, char **argv) {
   init_tests(0);
   printf("\n");
   if ((~testt) & 2) {
-    run_test(test_ref);
+    test_ref();
   }
   if ((~testt) & 1) {
-    run_test(test_avx);
+    test_avx();
   }
 
   return EXIT_SUCCESS;

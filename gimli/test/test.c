@@ -25,6 +25,11 @@
 #define GIMLI_BYTES (GIMLI_N * sizeof(uint32_t))
 #define ITERATIONS 10000
 
+typedef struct Test {
+  int (*test)();
+  const char *name;
+} Test;
+
 int test_sbox1(void) {
   uint32_t x = rand_uint32();
   uint32_t y = rand_uint32();
@@ -261,33 +266,44 @@ void init_tests(unsigned int seed) {
   srand(seed);
 }
 
-int test_ref() {
+int run_tests(Test *tests, int num_tests) {
   int res = 0;
-  res |= test_sbox1();
-  res |= test_sbox2();
-  res |= test_sbox3();
-  res |= test_sbox();
-  res |= test_small_swap();
-  res |= test_big_swap();
-  res |= test_gimli();
-  return res;
-}
-int test_avx() {
-  int res = 0;
-  res |= test_sboxv();
-  res |= test_small_swapv();
-  res |= test_big_swapv();
-  res |= test_gimliv();
+  for (int i = 0; i < num_tests; i++) {
+    printf("Testing %s:\n", tests[i].name);
+    for (int j = 0; j < ITERATIONS && 0 == res; j++) {
+      res = tests[i].test();
+    }
+    if (res) {
+      printf("FAILED\n");
+      return res;
+    }
+    printf("SUCCESS\n");
+    printf("\n");
+  }
   return res;
 }
 
-void run_test(int (*test_func)()) {
-  int res = 0;
-  for (int i = 0; i < ITERATIONS && 0 == res; i++) {
-    res = test_func();
-  }
-  if (0 == res) {
-    printf("SUCCESS\n");
-  }
-  printf("\n");
+int test_ref() {
+  Test tests[] = {
+     {test_sbox1, "test_sbox1"}
+    ,{test_sbox2, "test_sbox2"}
+    ,{test_sbox3, "test_sbox3"}
+    ,{test_sbox, "test_sbox"}
+    ,{test_small_swap, "test_small_swap"}
+    ,{test_big_swap, "test_big_swap"}
+    ,{test_gimli, "test_gimli"}
+  };
+  int num_tests = sizeof(tests) / sizeof(Test);
+  return run_tests(tests, num_tests);
+}
+
+int test_avx() {
+  Test tests[] = {
+    {test_sboxv, "test_sboxv"}
+   ,{test_small_swapv, "test_small_swapv"}
+   ,{test_big_swapv, "test_big_swapv"}
+   ,{test_gimliv, "test_gimliv"}
+  };
+  int num_tests = sizeof(tests) / sizeof(Test);
+  return run_tests(tests, num_tests);
 }
