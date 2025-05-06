@@ -1,7 +1,6 @@
 #include <inttypes.h>
 
-inline
-uint32_t rotate(uint32_t x, int bits) {
+inline uint32_t rotate(uint32_t x, int bits) {
   if (bits == 0)
     return x;
   return (x << bits) | (x >> (32 - bits));
@@ -64,23 +63,24 @@ uint32_t *big_swap(uint32_t *state) {
   return state;
 }
 
-extern void gimli(uint32_t *state) {
-  uint32_t round, column;
-
-  for (round = 24; round > 0; --round) {
-    for (column = 0; column < 4; ++column) {
+void gimli(uint32_t *state) {
+  for (uint32_t round = 24; round > 0; round--) {
+    for (uint32_t column = 0; column < 4; column++) {
       state = sbox(state, column);
     }
 
-    if ((round & 3) == 0) { // small swap: pattern s...s...s... etc.
+    /* Parenthesis are required in C but not in Jasmin. In Jasmin, arithmetic
+       and logic operators have precedence over comparisons. */
+    if ((round & 3) == 0) {
       state = small_swap(state);
     }
-    if ((round & 3) == 2) { // big swap: pattern ..S...S...S. etc.
+
+    if ((round & 3) == 2) {
       state = big_swap(state);
     }
 
-    if ((round & 3) == 0) { // add constant: pattern c...c...c... etc.
-      state[0] ^= (0x9e377900 + round);
+    if ((round & 3) == 0) {
+      state[0] ^= 0x9e377900 + round;
     }
   }
 }

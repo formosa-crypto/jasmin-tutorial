@@ -38,6 +38,7 @@ fn jazz_sbox(reg ptr u32[12] state, reg u64 column) -> reg ptr u32[12] {
     state = state;
     column = column;
     #inline state = sbox(state, column);
+    state = state;
     return state;
 }
 
@@ -45,6 +46,7 @@ export
 fn jazz_small_swap(reg ptr u32[12] state) -> reg ptr u32[12] {
     state = state;
     #inline state = small_swap(state);
+    state = state;
     return state;
 }
 
@@ -52,6 +54,7 @@ export
 fn jazz_big_swap(reg ptr u32[12] state) -> reg ptr u32[12] {
     state = state;
     #inline state = big_swap(state);
+    state = state;
     return state;
 }
 
@@ -59,5 +62,6 @@ export
 fn jazz_gimli(reg ptr u32[12] state) -> reg ptr u32[12] {
     state = state;
     #inline state = gimli(state);
+    state = state;
     return state;
 }

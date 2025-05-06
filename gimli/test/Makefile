@@ -57,7 +57,10 @@ $(JAZZ_ASM_AVX): $(JAZZ_SOURCES_AVX)
 all: $(OUT)
 
 format:
-	clang-format -i $(TEST_SOURCES) $(TEST_HEADERS)
+	clang-format -i \
+		$(TEST_SOURCES) $(TEST_HEADERS) \
+		$(REF_SOURCES) $(REF_HEADERS) \
+		$(AVX_SOURCES) $(AVX_HEADERS)
 
 run: $(SOURCES) $(HEADERS) $(JAZZ_ASM) $(JAZZ_ASM_AVX) $(OUT)
 	./$(OUT) 0

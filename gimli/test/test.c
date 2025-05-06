@@ -30,6 +30,9 @@ typedef struct Test {
   const char *name;
 } Test;
 
+/* -------------------------------------------------------------------------- */
+/* Reference. */
+
 int test_sbox1(void) {
   uint32_t x = rand_uint32();
   uint32_t y = rand_uint32();
@@ -106,8 +109,6 @@ int cmp_states(uint32_t st0[GIMLI_N], uint32_t st1[GIMLI_N], char *msg) {
   return 0;
 }
 
-// int cmp_vstates()
-
 int test_sbox(void) {
   uint32_t c_state[GIMLI_N], jazz_state[GIMLI_N];
   fill_state(c_state, jazz_state);
@@ -156,6 +157,9 @@ int test_gimli(void) {
 
   return cmp_states(c_state, jazz_state, "gimli(...)\n");
 }
+
+/* -------------------------------------------------------------------------- */
+/* AVX. */
 
 static void store_statev(statev sv, uint32_t *state) {
   _mm_storeu_si128((void *)(state + 0), sv.x);
@@ -258,6 +262,9 @@ int test_gimliv(void) {
   return cmp_states(c_state, jazz_state, "gimli(...)\n");
 }
 
+/* -------------------------------------------------------------------------- */
+/* Glue. */
+
 void init_tests(unsigned int seed) {
   if (0 == seed) {
     seed = (unsigned int)time(NULL);
@@ -284,26 +291,22 @@ int run_tests(Test *tests, int num_tests) {
 }
 
 int test_ref() {
-  Test tests[] = {
-     {test_sbox1, "test_sbox1"}
-    ,{test_sbox2, "test_sbox2"}
-    ,{test_sbox3, "test_sbox3"}
-    ,{test_sbox, "test_sbox"}
-    ,{test_small_swap, "test_small_swap"}
-    ,{test_big_swap, "test_big_swap"}
-    ,{test_gimli, "test_gimli"}
-  };
+  Test tests[] = {{test_sbox1, "test_sbox1"},
+                  {test_sbox2, "test_sbox2"},
+                  {test_sbox3, "test_sbox3"},
+                  {test_sbox, "test_sbox"},
+                  {test_small_swap, "test_small_swap"},
+                  {test_big_swap, "test_big_swap"},
+                  {test_gimli, "test_gimli"}};
   int num_tests = sizeof(tests) / sizeof(Test);
   return run_tests(tests, num_tests);
 }
 
 int test_avx() {
-  Test tests[] = {
-    {test_sboxv, "test_sboxv"}
-   ,{test_small_swapv, "test_small_swapv"}
-   ,{test_big_swapv, "test_big_swapv"}
-   ,{test_gimliv, "test_gimliv"}
-  };
+  Test tests[] = {{test_sboxv, "test_sboxv"},
+                  {test_small_swapv, "test_small_swapv"},
+                  {test_big_swapv, "test_big_swapv"},
+                  {test_gimliv, "test_gimliv"}};
   int num_tests = sizeof(tests) / sizeof(Test);
   return run_tests(tests, num_tests);
 }

@@ -19,6 +19,7 @@ uint64_t rand_uint64_between(uint64_t lo, uint64_t hi);
 
 __m128i rand_m128i(void);
 
+/* Fill the array a with n random bytes. */
 void rand_fill(void *a, uint64_t n);
 
 #endif
