@@ -23,6 +23,7 @@
 
 #define GIMLI_N 12
 #define GIMLI_BYTES (GIMLI_N * sizeof(uint32_t))
+#define ITERATIONS 10000
 
 int test_sbox1(void) {
   uint32_t x = rand_uint32();
@@ -260,25 +261,33 @@ void init_tests(unsigned int seed) {
   srand(seed);
 }
 
-char *test_names[TEST_NUM] = {
-    "sbox1", "sbox2", "sbox3", "sbox", "small_swap", "big_swap", "gimli",
-};
+int test_ref() {
+  int res = 0;
+  res |= test_sbox1();
+  res |= test_sbox2();
+  res |= test_sbox3();
+  res |= test_sbox();
+  res |= test_small_swap();
+  res |= test_big_swap();
+  res |= test_gimli();
+  return res;
+}
+int test_avx() {
+  int res = 0;
+  res |= test_sboxv();
+  res |= test_small_swapv();
+  res |= test_big_swapv();
+  res |= test_gimliv();
+  return res;
+}
 
-int (*test_funcs[TEST_NUM])(void) = {
-    test_sbox1,      test_sbox2,    test_sbox3, test_sbox,
-    test_small_swap, test_big_swap, test_gimli,
-};
-
-char *test_namesv[TEST_NUMV] = {
-    "sboxv",
-    "small_swapv",
-    "big_swapv",
-    "gimliv",
-};
-
-int (*test_funcsv[TEST_NUMV])(void) = {
-    test_sboxv,
-    test_small_swapv,
-    test_big_swapv,
-    test_gimliv,
-};
+void run_test(int (*test_func)()) {
+  int res = 0;
+  for (int i = 0; i < ITERATIONS && 0 == res; i++) {
+    res = test_func();
+  }
+  if (0 == res) {
+    printf("SUCCESS\n");
+  }
+  printf("\n");
+}
