@@ -1,19 +1,19 @@
-/* In Jasmin, most operators have the same syntax as in C.
+/* In Jasmin, most operators use the C syntax.
    For instance, +, -, *, /, %, &, |, ^, and << are the same.
    There are two shifts to the right: >> (unsigned) and >>s (signed, also known
    as arithmetic shift).
    Additionally, <<r and >>r are rotations to the left and right respectively.
 
-   This function modifies its argument. This means that
-     x = rotate(y, 3);
-     x += y;
-   won't work because y will have changed after the call and won't be valid for
-   the addition.
+   This function consumes its argument. This means that
+       x = rotate(y, 3);
+       x += y;
+   won't work because y will have been used after the call and won't be valid
+   for the addition.
    The second argument is a compile-time integer. */
 inline
 fn rotate(reg u32 x, inline int bits) -> reg u32 {
     x = x <<r bits;
-    return x;
+    return x; // You can only return variables, not expressions.
 }
 
 /* Each Jasmin instruction needs to correspond to an assembly instruction. You
@@ -21,14 +21,15 @@ fn rotate(reg u32 x, inline int bits) -> reg u32 {
    Remember that operations inherit the restrictions of the architecture you are
    targeting:
        x = y + z
-   will overwrite the value of y, because this is what the ADD instruction does
-   in x86.
+   will consume the value of y, i.e., y is no longer usable after this
+   instruction, because the ADD instruction in x86 overwrites its value.
    Using the +=, -=, *=, &=, >>=, <<r=, etc. syntax makes Jasmin code closer
    to x86 assembly and therefore easier to debug.
 
-   If you modify an argument in a function, the caller won't be able to use the
-   variable afterwards (it will not see the modified value, the compiler will
-   fail). */
+   If you consume an argument in a function, the caller won't be able to use the
+   variable afterwards, the compiler will fail if you try. In the case of x86,
+   where things get overwritten, the caller won't see the modified value; it
+   only sees an unusable variable. */
 fn sbox1(reg u32 x y z) -> reg u32 {
     reg u32 r;
     r = 0;
@@ -38,8 +39,8 @@ fn sbox1(reg u32 x y z) -> reg u32 {
 /* Try using the intrinsic XOR. The syntax is
      ?{}, <dst> = #XOR_<size>(<op1>, <op2>);
    Note that <dst>, <op1>, and <op2> have the same restrictions as in assembly:
-   <dst> will overwrite <op1>, and at most one of these three can be a memory
-   location.
+   <dst> needs to be allocated to the same register as <op1>, <op1> gets
+   consumed, and at most one of these three can be a memory location.
    The <size> part is either 8, 16, 32, 64, 128, or 256.
    The ?{} part is needed because XOR sets the flags. If you want to use one of
    the flags, you can write
@@ -51,7 +52,7 @@ fn sbox1(reg u32 x y z) -> reg u32 {
    You can also name other conditions, such as unsigned less than or equal
      ?{ "<=u" = b }, <dst> = #XOR_<size>(<op1>, <op2>);
    which is JMPbe.
-   Intrinsics are always uppercase. */
+   Intrinsics are always in all caps. */
 fn sbox2(reg u32 x y z) -> reg u32 {
     reg u32 r;
     r = 0;
@@ -67,7 +68,7 @@ fn sbox3(reg u32 x y z) -> reg u32 {
 /* Use the rotate function.
    Try inlining some of the function calls to the sboxes with the #inline
    annotation as in the jazz_gimli.jazz file.
-   Remember that if a function modifies its argument, the caller can no longer
+   Remember that if a function consumes its argument, the caller can no longer
    use the variable. */
 fn sbox(reg ptr u32[12] state, reg u64 column) -> reg ptr u32[12] {
     return state; // We must return the pointer since we modified the contents.
