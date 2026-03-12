@@ -63,14 +63,14 @@ fn big_swapv(reg u128 x) -> reg u128 {
 fn gimli_body(reg u128 x y z) -> reg u128, reg u128, reg u128 {
     inline int round;
     for round = 24 downto 0 {
-        #inline x, y, z = sboxv(x, y, z);
+        #[inline] x, y, z = sboxv(x, y, z);
 
         if (round % 4 == 0) {
-            #inline x = small_swapv(x);
+            #[inline] x = small_swapv(x);
         }
 
         if (round % 4 == 2) {
-            #inline x = big_swapv(x);
+            #[inline] x = big_swapv(x);
         }
 
         if (round % 4 == 0) {
@@ -87,7 +87,7 @@ fn gimliv(reg ptr u32[12] state) -> reg ptr u32[12] {
     reg ptr u128[3] st = state;
 
     // The compiler introduces six extra assignments.
-    #inline st[0], st[1], st[2] = gimli_body(st[0], st[1], st[2]);
+    #[inline] st[0], st[1], st[2] = gimli_body(st[0], st[1], st[2]);
 
     state = st;
     return state;
