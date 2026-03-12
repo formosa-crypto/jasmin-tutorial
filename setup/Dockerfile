@@ -1,3 +1,6 @@
+# Do not use this dockerfile.
+# It is very old.
+
 # how to build the Docker image:
 #  $ docker build -t jasmin101 .
 #  - takes ~6 minutes on ~modern laptop with Intel i7

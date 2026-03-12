@@ -57,16 +57,7 @@ Using these as examples, we will see how:
 
 Attendees are expected to be familiar with the C programming language.
 
-Additionally, in order to speed-up the setup process, Docker should be
-installed [docker.com/get-started](https://www.docker.com/get-started/)
-prior to the tutorial [1] and the following (Docker) image pulled:
-[miguelmirq/jasmin101](https://hub.docker.com/r/miguelmirq/jasmin101).
-
-[1] On ARM-based Macbooks, make sure the following options are set in the Docker
-settings:
-- General -> Use Virtualization Framework
-- General -> VirtioFS
-- General -> Use Rosetta for x86/amd64 emulation on Apple Silicon
+Dependencies are installed with nix flakes.
 
 > For more details on Jasmin, refer to the official documentation: [Jasmin Documentation](https://lyonel2017.github.io/jasmin-doc/).
 
@@ -85,31 +76,12 @@ The artifact is structured as follows:
 
 ## Setting up Jasmin & Easycrypt
 
-### Using Docker
-
-This artifact contains a Dockerfile which sets up a container with
-Jasmi and Easycrypt along with the contents of the artifact. For information on
-the installation of Docker see
-[docs.docker.com/get-docker](https://docs.docker.com/get-docker/).
-
-To setup Easycrypt using Docker, run:
-
-```shell
-$ docker build -t jasmin101 .
-```
-
-And then
-
-```shell
-$ docker run -it jasmin101
-```
-
 ### Using Flakes
 
 Run
 
 ```shell
-$ nix develop --profile env
+$ nix develop --profile ./nix-env
 ```
 
 and you will be in a shell with the dependencies installed. You can exit the
@@ -117,7 +89,7 @@ shell with `exit`. To enter the shell afterwards (and avoid downloading all the
 dependencies again), use
 
 ```shell
-$ nix develop ./env
+$ nix develop ./nix-env
 ```
 
 ### Other alternatives
