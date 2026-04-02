@@ -60,7 +60,8 @@ proof.
   have -> : (i %/ (n * p) * (n * p) + (i1 %/ p * p + i1 %% p)) =
          ((i %/ (n * p) * n + i1 %/ p) * p + i1 %% p) by ring.
   have hp0 : p <> 0 by smt().
-  rewrite divzMDl 1:// (divz_small (i1%%p) p) 2:/=; 1: smt (edivzP).
+  rewrite divzMDl 1:// (divz_small (i1%%p) p) 2:/=.
+  - by have [_] /(_ hp0) := edivzP i1 p.
   rewrite modzMDl modz_small 2://.
   apply bound_abs;apply divz_cmp => //.
   by apply modz_cmp => /#.
@@ -77,7 +78,7 @@ lemma exp_abs (x n:int) : x ^ `|n| = x ^ n.
 proof. by smt (exprV). qed.
 
 lemma modz_mod_pow2 i n k : i %% 2^n %% 2^k = i %% 2^(min `|n| `|k|).
-proof. 
+proof.
   rewrite -(exp_abs 2 n) -(exp_abs 2 k).
   move: `|n| `|k| (IntOrder.normr_ge0 n) (IntOrder.normr_ge0 k) => {n k} n k hn hk.
   rewrite /min;case (n < k) => hnk.
@@ -266,22 +267,6 @@ op _interleave (l1 l2: 'a list) =
  with l1 = _::_, l2 = "[]" => l1
  with l1 = a1::l1', l2 = a2::l2' => a1::a2::_interleave l1' l2'.
 
-(* ------------------------------------------------------------------- *)
-(* Safety                                                              *)
-
-op in_bound (x n:int) = 0 <= x /\ x < n.
-op is_init (x : 'a option) = x <> None.
-
-lemma is_init_Some (a:'a) : is_init (Some a).
-proof. done. qed.
-
-lemma in_bound_simplify x n :
-    0 <= x < n => in_bound x n.
-proof. done. qed.
-
-hint simplify [eqtrue] is_init_Some.
-hint simplify [eqtrue] in_bound_simplify.
-
 (* -------------------------------------------------------------------- *)
 
 lemma powm1_mod k n:
@@ -360,7 +345,7 @@ rewrite bs2int_cat /=; congr.
 by rewrite /bs2int /= big_int1.
 qed.
 
-lemma bs2int_nseq b k: 
+lemma bs2int_nseq b k:
   bs2int (nseq k b) = if b /\ 0 <= k then 2^k - 1 else 0.
 proof.
 case: (0 <= k) => /= hk; last by rewrite nseq0_le 1:/# /bs2int /= big_geq //.
@@ -475,3 +460,28 @@ op (`<<`) (x i : int) : int =
   else (x %/ 2^(-i)).
 
 op (`|>>`) (x i : int) : int = x `<<` (-i).
+
+(* --------------------------------------------------- *)
+(* signed division *)
+
+op zsign (i:int) =
+  if i < 0 then -1
+  else if i = 0 then 0
+  else 1.
+
+op (\zquot) (a b : int) =
+  zsign a * zsign b * (`|a| %/ `|b|).
+
+op (\zrem) (a b : int) =
+  zsign a * (`|a| %% `|b|).
+
+lemma zquot0 (a: int) : 0 \zquot a = 0
+  by [].
+
+lemma zrem0 (a: int) : 0 \zrem a = 0
+  by [].
+
+lemma zrem_alt (a b : int) :
+  b <> 0 =>
+  a - b * (a \zquot b) = a \zrem b
+  by smt().

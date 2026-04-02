@@ -1,7 +1,10 @@
 (* -------------------------------------------------------------------- *)
 require import AllCore IntDiv List.
 require export JModel_common JArray JWord_array Jslh JMemory AES.
+require SHA.
 
+
+abbrev ptr_modulus = 2^64.
 
 (* ------------------------------------------------------------------- *)
 
@@ -153,11 +156,12 @@ abbrev [-printing] XCHG_64 (x y:W64.t) = swap_ x y.
 
 | LZCNT  of wsize             (* number of leading zero *)
 | TZCNT  of wsize             (* number of trailing zero *)
+| BSR    of wsize             (* bit scan reverse *)
 *)
 
 (* Remark: W8.ALU W16.ALU W32.ALU W64.ALU are exported *)
 (* ALU defines the operators: 
-   ADD SUB IMUL IMUL_r IMUL_ri DIV IDIV CQO ADC SBB NEG INC DEC LZCNT TZCNT
+   ADD SUB IMUL IMUL_r IMUL_ri DIV IDIV CQO ADC SBB NEG INC DEC LZCNT TZCNT BSR
 *)
 
 (* Flag *)
@@ -259,10 +263,20 @@ qed.
 (*
     | MOVX  of wsize
     | POR
+    | PADD of velem & wsize
 *)
 op MOVX_32 (v: W32.t) = v.
 op MOVX_64 (v: W64.t) = v.
 abbrev [-printing] POR = W64.(`|`).
+
+op PADD_8u8 (x y: W64.t) = map2 W8.(+) x y.
+op PADD_4u16 (x y: W64.t) = map2 W16.(+) x y.
+op PADD_2u32 (x y: W64.t) = map2 W32.(+) x y.
+op PADD_1u64 (x y: W64.t) = x + y.
+abbrev [-printing] PADD_16u8 = VPADD_16u8.
+abbrev [-printing] PADD_8u16 = VPADD_8u16.
+abbrev [-printing] PADD_4u32 = VPADD_4u32.
+abbrev [-printing] PADD_2u64 = VPADD_2u64.
 
 (* -------------------------------------------------------------------- *)
   (* SSE instructions *)
@@ -551,18 +565,38 @@ abbrev [-printing] VPBLEND_8u32 = VPBLENDD_256.
 
 (* ------------------------------------------------------------------- *)
 (*
-| VPBLENDVB `(wsize)
+| BLENDV of velem & vsize
 *)
-op VPBLENDVB_128 (v1 v2 m: W128.t) : W128.t =
+op BLENDV_16u8 (v1 v2 m: W128.t) : W128.t =
   let choose = fun n =>
     let w = if msb (m \bits8 n) then v2 else v1 in
     w \bits8 n in
   pack16 [choose 0; choose 1; choose 2; choose 3; choose 4; choose 5; choose 6; choose 7;
           choose 8; choose 9; choose 10; choose 11; choose 12; choose 13; choose 14; choose 15].
 
-op VPBLENDVB_256 (v1 v2 m: W256.t) : W256.t =
-  pack2 [VPBLENDVB_128 (v1 \bits128 0) (v2 \bits128 0) (m \bits128 0);
-         VPBLENDVB_128 (v1 \bits128 1) (v2 \bits128 1) (m \bits128 1)].
+op BLENDV_32u8 (v1 v2 m: W256.t) : W256.t =
+  pack2 [BLENDV_16u8 (v1 \bits128 0) (v2 \bits128 0) (m \bits128 0);
+         BLENDV_16u8 (v1 \bits128 1) (v2 \bits128 1) (m \bits128 1)].
+
+op BLENDV_4u32 (v1 v2 m: W128.t) : W128.t =
+  let choose = fun n =>
+    let w = if msb (m \bits32 n) then v2 else v1 in
+    w \bits32 n in
+  pack4 [ choose 0; choose 1; choose 2; choose 3 ].
+
+op BLENDV_8u32 (v1 v2 m: W256.t) : W256.t =
+  pack2 [ BLENDV_4u32 (v1 \bits128 0) (v2 \bits128 0) (m \bits128 0);
+          BLENDV_4u32 (v1 \bits128 1) (v2 \bits128 1) (m \bits128 1) ].
+
+op BLENDV_2u64 (v1 v2 m: W128.t) : W128.t =
+  let choose = fun n =>
+    let w = if msb (m \bits64 n) then v2 else v1 in
+    w \bits64 n in
+  pack2 [ choose 0; choose 1 ].
+
+op BLENDV_4u64 (v1 v2 m: W256.t) : W256.t =
+  pack2 [ BLENDV_2u64 (v1 \bits128 0) (v2 \bits128 0) (m \bits128 0);
+          BLENDV_2u64 (v1 \bits128 1) (v2 \bits128 1) (m \bits128 1) ].
 
 (* ------------------------------------------------------------------- *)
 (*
@@ -789,28 +823,37 @@ op VPERMQ (w:W256.t) (i:W8.t) : W256.t =
 
 (* ------------------------------------------------------------------- *)
 (*
-| VPMOVMSKB of wsize & wsize (* source size (U128/256) & dest. size (U32/64) *)
+| MOVEMASK of velem & wsize
 *)
-op VPMOVMSKB_u128u32 (v: W128.t) =
+op MOVEMASK_16u8 (v: W128.t) =
    let vb = W16u8.to_list v in
    W32.bits2w (map W8.msb vb).
 
-op VPMOVMSKB_u128u64 (v: W128.t) =
-   let vb = W16u8.to_list v in
-   W64.bits2w (map W8.msb vb).
+op MOVEMASK_32u8 (v: W256.t) =
+   let vb = W32u8.to_list v in
+   W32.bits2w (map W8.msb vb).
 
-op VPMOVMSKB_u256u32 (v: W256.t) =
-  let vb = W32u8.to_list v in
-  W32.bits2w (map W8.msb vb).
+op MOVEMASK_4u32 (v: W128.t) =
+   let vb = W4u32.to_list v in
+   W32.bits2w (map W32.msb vb).
 
-op VPMOVMSKB_u256u64 (v: W256.t) =
-  let vb = W32u8.to_list v in
-  W64.bits2w (map W8.msb vb).
+op MOVEMASK_8u32 (v: W256.t) =
+   let vb = W8u32.to_list v in
+   W32.bits2w (map W32.msb vb).
+
+op MOVEMASK_2u64 (v: W128.t) =
+   let vb = W2u64.to_list v in
+   W32.bits2w (map W64.msb vb).
+
+op MOVEMASK_4u64 (v: W256.t) =
+   let vb = W4u64.to_list v in
+   W32.bits2w (map W64.msb vb).
 
 (* ------------------------------------------------------------------- *)
 (*
 | VPCMPEQ of velem & wsize
 | VPCMPGT of velem & wsize
+| VPSIGN of velem & wsize
 *)
 (* FIXME: Add this in ALU *)
 
@@ -875,6 +918,7 @@ op VMOVHPD (v: W128.t) : W64.t =
 | VPMINS of velem & wsize
 | VPMAXU of velem & wsize
 | VPMAXS of velem & wsize
+| VPABS of velem & wsize
 *)
 (* Defined in WRuS *)
 
@@ -964,6 +1008,17 @@ abbrev [-printing] VPCLMULQDQ_128 = PCLMULQDQ.
 op VPCLMULQDQ_256 (v1 v2: W256.t) (k: W8.t): W256.t =
  pack2 [ PCLMULQDQ (v1 \bits128 0) (v2 \bits128 0) k
        ; PCLMULQDQ (v1 \bits128 1) (v2 \bits128 1) k ].
+
+(* ------------------------------------------------------------------- *)
+(* SHA instructions *)
+(*
+| SHA256RNDS2
+| SHA256MSG1
+| SHA256MSG2
+*)
+op SHA256RNDS2 (v1 v2 v3: W128.t) : W128.t = SHA.rnds2 v1 v2 v3.
+op SHA256MSG1 (v1 v2: W128.t) : W128.t = SHA.msg1 v1 v2.
+op SHA256MSG2 (v1 v2: W128.t) : W128.t = SHA.msg2 v1 v2.
 
 (* -------------------------------------------------------------------- *)
 

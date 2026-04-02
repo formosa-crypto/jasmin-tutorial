@@ -24,7 +24,7 @@
         installPhase = "touch $out";
         NIX_ENFORCE_NO_NATIVE = 0;
         NIX_CFLAGS_COMPILE = "-march=native -mavx2";
-        EC_IDIRS="./extraction;Jasmin:./eclib"; # Proof General
+        EC_RDIRS="./extraction;Jasmin:./eclib"; # Proof General
       };
   };
 }

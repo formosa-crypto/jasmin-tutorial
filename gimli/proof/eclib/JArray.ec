@@ -51,7 +51,16 @@ abstract theory MonoArray.
   lemma get_set_if (t:t) (i j :int) (a:elem) :
     t.[i <- a].[j] = if 0 <= i < size /\ j = i then a else t.[j].
   proof.
-    rewrite setE initE /=; smt (get_out).
+    rewrite setE initE /=.
+    move: (get_out t i) (get_out t j).
+    case: (0 <= i < size) => /=.
+    + case: (j = i); first by move => -> ->.
+      by case: (0 <= j < size) => /= // _ _ _ ->.
+    move => hi _.
+    case: (0 <= j < size); last by move => _ ->.
+    move => hj /=.
+    suff -> // : j <> i.
+    smt().
   qed.
 
   lemma get_setE (t:t) (x y:int) (a:elem) :
@@ -71,7 +80,7 @@ abstract theory MonoArray.
   lemma set_out (i : int) (e : elem) (t : t):
     ! (0 <= i < size) => t.[i <- e] = t.
   proof.
-    by move=> hi; apply ext_eq => j hj; rewrite get_set_if hi.  
+    by move=> hi; apply ext_eq => j hj; rewrite get_set_if hi.
   qed.
 
   lemma set_neg (i : int) (e : elem) (t : t):
@@ -219,7 +228,7 @@ abstract theory MonoArray.
   proof.
     rewrite to_listE map2E map2_zip init_of_list /=;congr.
     apply (eq_from_nth dfl).
-    + rewrite !size_map size_zip !size_map StdOrder.IntOrder.minrE /=. 
+    + rewrite !size_map size_zip !size_map StdOrder.IntOrder.minrE /=.
       smt (size_iota ge0_size).
     move=> i; rewrite size_map => hi.
     rewrite (nth_map 0) 1:// (nth_map (dfl,dfl)).
@@ -258,15 +267,29 @@ abstract theory MonoArray.
 
   hint simplify filliE.
 
+  lemma filliEs (f : int -> elem) (k len:int) (t : t)  i :
+      (fill f k len t).[i] = if k <= i < k + len /\ 0 <= i < size then f i else t.[i].
+  proof. by case: (0 <= i < size) => hi;[rewrite filliE | rewrite !get_out]. qed.
+
   (* -------------------------------------------------------------------- *)
   op sub (t: t) k len = mkseq (fun (i:int) => t.[k+i]) len.
 
+  lemma size_sub_ t k len : size (sub t k len) = max 0 len.
+  proof. by rewrite size_mkseq. qed.
+
   lemma size_sub t k len : 0 <= len => size (sub t k len) = len.
-  proof. move=> hl; rewrite size_mkseq /max /#. qed.
+  proof. move=> hl; rewrite size_sub_ /#. qed.
 
   lemma nth_sub (t : t) k len i : 0 <= i < len =>
     nth dfl (sub t k len) i = t.[k + i].
   proof. by move=> h0i; rewrite nth_mkseq. qed.
+
+  lemma nth_subs (t : t) k len i :
+    nth dfl (sub t k len) i = if 0 <= i < len then t.[k + i] else dfl.
+  proof.
+    case: (0 <= i < len) => ?; [rewrite nth_sub | rewrite nth_out] => //.
+    rewrite size_sub_ /#.
+  qed.
 
 end MonoArray.
 
@@ -329,7 +352,7 @@ abstract theory PolyArray.
   lemma set_out (i : int) (e : 'a) (t : 'a t):
     ! (0 <= i < size) => t.[i <- e] = t.
   proof.
-    by move=> hi; apply ext_eq => j hj; rewrite get_set_if hi.  
+    by move=> hi; apply ext_eq => j hj; rewrite get_set_if hi.
   qed.
 
   lemma set_neg (i : int) (e : 'a) (t : 'a t):
@@ -373,7 +396,7 @@ abstract theory PolyArray.
     init f.
   proof.
     apply ext_eq=> x hx; rewrite initiE 1://.
-    have h : forall sz, sz <= size => 0 <= x < sz => 
+    have h : forall sz, sz <= size => 0 <= x < sz =>
       (foldl (fun (a : 'a t) (i : int) => a.[i <- f i]) t (iota_ 0 sz)).[x] = f x; last by apply (h size).
     elim /natind; 1: smt().
     by move=> {hx} sz hsz0 ih hsize hx; rewrite iotaSr 1:// -cats1 foldl_cat /=; smt (get_setE).
@@ -521,12 +544,30 @@ abstract theory PolyArray.
     by rewrite mem_iota /= => h1; apply h;case h1.
   qed.
 
-  (* -------------------------------------------------------------------- *)
-  op is_init (t: 'a option t) = all is_init t.
-
-  lemma is_init_Some (t:'a t) : is_init (map Some t).
-  proof. by rewrite /is_init allP => i hi; rewrite mapiE. qed.
-
-  hint simplify [eqtrue] is_init_Some.
 
 end PolyArray.
+
+(* Array slicing *)
+abstract theory SubArray.
+  op sizeS: int.
+  axiom gt0_sizeS: 0 < sizeS.
+
+  op sizeB: int.
+  axiom gt0_sizeB: 0 < sizeB.
+
+  (* Sub-array *)
+  clone import PolyArray as ArrayS with
+    op size <- sizeS
+    proof ge0_size by rewrite ltzW gt0_sizeS.
+
+  (* Base array *)
+  clone import PolyArray as ArrayB with
+    op size <- sizeB
+    proof ge0_size by rewrite ltzW gt0_sizeB.
+
+  op get_sub (a: 'a ArrayB.t) (i: int) = ArrayS.init (fun j => a.[i + j]).
+
+  op set_sub (a: 'a ArrayB.t) (i: int) (b: 'a ArrayS.t) =
+    ArrayB.init (fun j => if i <= j < i + sizeS then b.[j - i] else a.[j]).
+end SubArray.
+
