@@ -1,100 +1,105 @@
+/* In Jasmin, most operators use the C syntax.
+   For instance, +, -, *, /, %, &, |, ^, and << are the same.
+   There are two shifts to the right: >> (unsigned) and >>s (signed, also known
+   as arithmetic shift).
+   Additionally, <<r and >>r are rotations to the left and right respectively.
+
+   This function consumes its argument. This means that
+       x = rotate(y, 3);
+       x += y;
+   won't work because y will have been used after the call and won't be valid
+   for the addition.
+   The second argument is a compile-time integer. */
 inline
 fn rotate(reg u32 x, inline int bits) -> reg u32 {
-    x <<r= bits;
-    return x;
+    x = x <<r bits;
+    return x; // You can only return variables, not expressions.
 }
 
+/* Each Jasmin instruction needs to correspond to an assembly instruction. You
+   need to break down complex expressions into several assignments.
+   Remember that operations inherit the restrictions of the architecture you are
+   targeting:
+       x = y + z
+   will consume the value of y, i.e., y is no longer usable after this
+   instruction, because the ADD instruction in x86 overwrites its value.
+   Using the +=, -=, *=, &=, >>=, <<r=, etc. syntax makes Jasmin code closer
+   to x86 assembly and therefore easier to debug.
+
+   If you consume an argument in a function, the caller won't be able to use the
+   variable afterwards, the compiler will fail if you try. In the case of x86,
+   where things get overwritten, the caller won't see the modified value; it
+   only sees an unusable variable. */
 fn sbox1(reg u32 x y z) -> reg u32 {
-    reg u32 b = z;
-    b <<= 1;
-    reg u32 c = y;
-    c &= z;
-    c <<= 2;
-    reg u32 a = x;
-    a ^= b;
-    a ^= c;
-    return a;
+    reg u32 r;
+    r = 0;
+    return r;
 }
 
+/* Try using the intrinsic XOR. The syntax is
+     ?{}, <dst> = #XOR_<size>(<op1>, <op2>);
+   Note that <dst>, <op1>, and <op2> have the same restrictions as in assembly:
+   <dst> needs to be allocated to the same register as <op1>, <op1> gets
+   consumed, and at most one of these three can be a memory location.
+   The <size> part is either 8, 16, 32, 64, 128, or 256.
+   The ?{} part is needed because XOR sets the flags. If you want to use one of
+   the flags, you can write
+     reg bool b;
+     ?{ ZF = b }, <dst> = #XOR_<size>(<op1>, <op2>);
+   and then for instance do
+     if (b) { ... }
+   which is JMPeq.
+   You can also name other conditions, such as unsigned less than or equal
+     ?{ "<=u" = b }, <dst> = #XOR_<size>(<op1>, <op2>);
+   which is JMPbe.
+   Intrinsics are always in all caps. */
 fn sbox2(reg u32 x y z) -> reg u32 {
-    reg u32 a = y;
-    reg u32 b = x;
-    b |= z;
-    b <<= 1;
-    ?{}, a = #XOR_32(a, x);
-    a ^= b;
-    return a;
+    reg u32 r;
+    r = 0;
+    return r;
 }
 
 fn sbox3(reg u32 x y z) -> reg u32 {
-    reg u32 a = z;
-    reg u32 b = x;
-    b &= y;
-    b <<= 3;
-    a ^= y;
-    a ^= b;
-    return a;
+    reg u32 r;
+    r = 0;
+    return r;
 }
 
+/* Use the rotate function.
+   Try inlining some of the function calls to the sboxes with the #inline
+   annotation as in the jazz_gimli.jazz file.
+   Remember that if a function consumes its argument, the caller can no longer
+   use the variable. */
 fn sbox(reg ptr u32[12] state, reg u64 column) -> reg ptr u32[12] {
-    // The compiler introduces an extra assignment for each following line.
-    reg u32 x = rotate(state[column], 24);
-    reg u32 y = rotate(state[column + 4], 9);
-    reg u32 z = state[column + 8];
-
-    #[inline] state[column + 8] = sbox1(x, y, z);
-    #[inline] state[column + 4] = sbox2(x, y, z);
-    #[inline] state[column] = sbox3(x, y, z);
-
-    return state;
+    return state; // We must return the pointer since we modified the contents.
 }
 
 fn small_swap(reg ptr u32[12] state) -> reg ptr u32[12] {
-    reg u32 x = state[0];
-    x, state[1] = #swap(x, state[1]); // Uses the XCHG instruction.
-    state[0] = x;
-
-    x = state[2];
-    x, state[3] = #swap(x, state[3]);
-    state[2] = x;
-
-    return state;
+    return state; // We must return the pointer since we modified the contents.
 }
 
 fn big_swap(reg ptr u32[12] state) -> reg ptr u32[12] {
-    reg u32 x = state[0];
-    x, state[2] = #swap(x, state[2]);
-    state[0] = x;
-
-    x = state[1];
-    x, state[3] = #swap(x, state[3]);
-    state[1] = x;
-
-    return state;
+    return state; // We must return the pointer since we modified the contents.
 }
 
-/* Sometimes, inlining function calls makes the code go faster. */
+/* Experiment using while loops and for loops.
+   The syntax for while is
+       while (e) { c }
+   as in C.
+   For loops are always unrolled, meaning their bounds must be compile-time
+   constants.
+   The syntax is
+       for i = A to B { c }
+   and
+       for i = A downto B { c }
+   for increasing and decreasing loops respectively (the former increases from A
+   to B-1 and the latter decreases from A to B-1).
+   The iterator variable of for loops must be an inline int, i.e., a
+   compile-time constant that is not placed in a register.
+   The bounds A and B must consist of concrete numbers, parameters, or inline
+   ints, i.e., things that the compiler statically knows the value of.
+   Modifying the iterator variable inside a for loop has no effect on the number
+   of iterations or the value of the variable in the next iteration. */
 fn gimli(reg ptr u32[12] state) -> reg ptr u32[12] {
-    inline int round;
-    for round = 24 downto 0 {
-        inline int column;
-        for column = 0 to 4 {
-            // The compiler introduces an extra assignment for column.
-            #[inline] state = sbox(state, column);
-        }
-
-        if (round % 4 == 0) {
-            #[inline] state = small_swap(state);
-        }
-
-        if (round % 4 == 2) {
-            #[inline] state = big_swap(state);
-        }
-
-        if (round % 4 == 0) {
-            state[0] ^= round + 0x9e377900;
-        }
-    }
-
-    return state;
+    return state; // We must return the pointer since we modified the contents.
 }
