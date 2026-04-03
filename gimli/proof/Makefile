@@ -2,12 +2,13 @@
 
 # --------------------------------------------------------------------
 JASMINEC ?= jasmin2ec
-EXT_DIR := $(PROOF_DIR)/extraction
-ECCONF := ec.config
+EXT_DIR = $(PROOF_DIR)/extraction
+ECCONF = ec.config
 CHECKS ?= gimli
 ECARGS ?=
 
-.PHONY: clean
+.PHONY: check checkec clean
+.DEFAULT_GOAL = check
 
 check: gimli_x86.ec gimli_x86_ct.ec gimli_avx.ec gimli_avx_ct.ec checkec
 
@@ -27,7 +28,7 @@ $(EXT_DIR):
 	@mkdir $@
 
 checkec:
-	easycrypt	runtest $(ECCONF) $(CHECKS)
+	easycrypt runtest $(ECCONF) $(CHECKS)
 
 clean:
 	-rm -rf $(EXT_DIR)
