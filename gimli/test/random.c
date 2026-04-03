@@ -52,9 +52,8 @@ uint64_t rand_uint64_between(uint64_t lo, uint64_t hi) {
 
 __m128i rand_m128i(void) {
   __m128i r = _mm_setzero_si128();
-  uint64_t x;
 
-  x = rand_uint64();
+  uint64_t x = rand_uint64();
   r = _mm_insert_epi64(r, x, 0);
   x = rand_uint64();
   r = _mm_insert_epi64(r, x, 1);

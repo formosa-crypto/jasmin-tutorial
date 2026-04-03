@@ -23,17 +23,13 @@ static inline __m128i rotate24(__m128i x) {
 }
 
 statev sboxv(statev sv) {
-  __m128i newx;
-  __m128i newy;
-  __m128i newz;
-
   sv.x = rotate24(sv.x);
   sv.y = rotate(sv.y, 9);
   sv.z = rotate(sv.z, 0);
 
-  newz = sv.x ^ shift(sv.z, 1) ^ shift(sv.y & sv.z, 2);
-  newy = sv.y ^ sv.x ^ shift(sv.x | sv.z, 1);
-  newx = sv.z ^ sv.y ^ shift(sv.x & sv.y, 3);
+  __m128i newz = sv.x ^ shift(sv.z, 1) ^ shift(sv.y & sv.z, 2);
+  __m128i newy = sv.y ^ sv.x ^ shift(sv.x | sv.z, 1);
+  __m128i newx = sv.z ^ sv.y ^ shift(sv.x & sv.y, 3);
 
   sv.x = newx;
   sv.y = newy;
@@ -53,11 +49,11 @@ __m128i big_swapv(__m128i x) {
 }
 
 extern void gimliv(uint32 *state) {
-  statev sv;
-
-  sv.x = _mm_loadu_si128((void *)(state + 0));
-  sv.y = _mm_loadu_si128((void *)(state + 4));
-  sv.z = _mm_loadu_si128((void *)(state + 8));
+  statev sv = {
+      .x = _mm_loadu_si128((void *)(state + 0)),
+      .y = _mm_loadu_si128((void *)(state + 4)),
+      .z = _mm_loadu_si128((void *)(state + 8)),
+  };
 
   for (int round = 24; round > 0; --round) {
     sv = sboxv(sv);

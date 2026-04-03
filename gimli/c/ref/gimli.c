@@ -19,28 +19,19 @@ uint32_t sbox3(uint32_t x, uint32_t y, uint32_t z) {
 }
 
 uint32_t *sbox(uint32_t *state, uint64_t column) {
-  uint32_t x, y, z, a;
+  uint32_t x = rotate(state[column], 24);
+  uint32_t y = rotate(state[4 + column], 9);
+  uint32_t z = state[8 + column];
 
-  x = rotate(state[column], 24);
-  y = rotate(state[4 + column], 9);
-  z = state[8 + column];
-
-  a = sbox1(x, y, z);
-  state[8 + column] = a;
-
-  a = sbox2(x, y, z);
-  state[4 + column] = a;
-
-  a = sbox3(x, y, z);
-  state[column] = a;
+  state[8 + column] = sbox1(x, y, z);
+  state[4 + column] = sbox2(x, y, z);
+  state[column] = sbox3(x, y, z);
 
   return state;
 }
 
 uint32_t *small_swap(uint32_t *state) {
-  uint32_t x;
-
-  x = state[0];
+  uint32_t x = state[0];
   state[0] = state[1];
   state[1] = x;
   x = state[2];
@@ -51,9 +42,7 @@ uint32_t *small_swap(uint32_t *state) {
 }
 
 uint32_t *big_swap(uint32_t *state) {
-  uint32_t x;
-
-  x = state[0];
+  uint32_t x = state[0];
   state[0] = state[2];
   state[2] = x;
   x = state[1];

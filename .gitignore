@@ -2,4 +2,4 @@
 gimli/jasmin/ref/jazz_gimli.s
 gimli/jasmin/avx2/jazz_gimliv.s
 gimli/proof/extraction
-gimli/test/out.o
+gimli/test/test_gimli

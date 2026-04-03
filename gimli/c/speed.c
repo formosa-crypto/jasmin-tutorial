@@ -14,16 +14,14 @@ long long cpucycles(void)
 int main()
 {
   unsigned int x[24];
-  int i;
+  for (int i = 0;i < 24;++i) x[i] = getpid() + i;
+
   unsigned long long t[21];
-
-  for (i = 0;i < 24;++i) x[i] = getpid() + i;
-
-  for (i = 0;i < 21;++i) {
+  for (int i = 0;i < 21;++i) {
     t[i] = cpucycles();
   }
 
-  for (i = 0;i < 21;++i) {
+  for (int i = 0;i < 21;++i) {
     t[i] = cpucycles();
     gimli(x);
     gimli(x);
@@ -37,6 +35,6 @@ int main()
     gimli(x);
   }
 
-  for (i = 0;i < 20;++i) printf("%lld * 0.1\n",t[i + 1] - t[i]);
+  for (int i = 0;i < 20;++i) printf("%lld * 0.1\n",t[i + 1] - t[i]);
   return 0;
 }

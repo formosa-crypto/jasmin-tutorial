@@ -168,35 +168,31 @@ static void store_statev(statev sv, uint32_t *state) {
 }
 
 static statev load_statev(uint32_t *state) {
-  statev sv;
-
-  sv.x = _mm_loadu_si128((void *)(state + 0));
-  sv.y = _mm_loadu_si128((void *)(state + 4));
-  sv.z = _mm_loadu_si128((void *)(state + 8));
-
+  statev sv = {
+      .x = _mm_loadu_si128((void *)(state + 0)),
+      .y = _mm_loadu_si128((void *)(state + 4)),
+      .z = _mm_loadu_si128((void *)(state + 8)),
+  };
   return sv;
 }
 
 int test_sboxv(void) {
-  char *msg;
   uint32_t c_state[GIMLI_N], jazz_state[GIMLI_N];
-  statev sv;
-  int res;
-
   fill_state(c_state, jazz_state);
 
-  sv = load_statev(c_state);
+  statev sv = load_statev(c_state);
   sv = sboxv(sv);
   store_statev(sv, c_state);
   jazz_sboxv(jazz_state);
 
+  char *msg;
   if (asprintf(&msg, "sboxv(...)\n") == -1) {
     printf("ERROR: asprintf failed.\n");
     return 1;
   }
-  free(msg);
 
-  res = cmp_states(c_state, jazz_state, msg);
+  int res = cmp_states(c_state, jazz_state, msg);
+  free(msg);
   return res;
 }
 
@@ -207,18 +203,16 @@ int cmp_lanes(__m128i a, __m128i b) {
 
 int test_small_swapv(void) {
   __m128i c_lane, jazz_lane;
-  uint64_t cl_lane, ch_lane, jazzl_lane, jazzh_lane;
-
   FILL_LANE(c_lane, jazz_lane);
 
   c_lane = small_swapv(c_lane);
   jazz_lane = jazz_small_swapv(jazz_lane);
 
   if (!cmp_lanes(c_lane, jazz_lane)) {
-    cl_lane = _mm_extract_epi64(c_lane, 0);
-    ch_lane = _mm_extract_epi64(c_lane, 1);
-    jazzl_lane = _mm_extract_epi64(jazz_lane, 0);
-    jazzh_lane = _mm_extract_epi64(jazz_lane, 1);
+    uint64_t cl_lane = _mm_extract_epi64(c_lane, 0);
+    uint64_t ch_lane = _mm_extract_epi64(c_lane, 1);
+    uint64_t jazzl_lane = _mm_extract_epi64(jazz_lane, 0);
+    uint64_t jazzh_lane = _mm_extract_epi64(jazz_lane, 1);
     printf("ERROR:\n");
     printf("  small_swapv\n");
     printf("  C = %#018" PRIx64 "%016" PRIx64 " \n", ch_lane, cl_lane);
@@ -231,17 +225,16 @@ int test_small_swapv(void) {
 
 int test_big_swapv(void) {
   __m128i c_lane, jazz_lane;
-  uint64_t cl_lane, ch_lane, jazzl_lane, jazzh_lane;
   FILL_LANE(c_lane, jazz_lane);
 
   c_lane = big_swapv(c_lane);
   jazz_lane = jazz_big_swapv(jazz_lane);
 
   if (!cmp_lanes(c_lane, jazz_lane)) {
-    cl_lane = _mm_extract_epi64(c_lane, 0);
-    ch_lane = _mm_extract_epi64(c_lane, 1);
-    jazzl_lane = _mm_extract_epi64(jazz_lane, 0);
-    jazzh_lane = _mm_extract_epi64(jazz_lane, 1);
+    uint64_t cl_lane = _mm_extract_epi64(c_lane, 0);
+    uint64_t ch_lane = _mm_extract_epi64(c_lane, 1);
+    uint64_t jazzl_lane = _mm_extract_epi64(jazz_lane, 0);
+    uint64_t jazzh_lane = _mm_extract_epi64(jazz_lane, 1);
     printf("ERROR:\n");
     printf("  big_swapv\n");
     printf("  C = %#018" PRIx64 "%016" PRIx64 " \n", ch_lane, cl_lane);
