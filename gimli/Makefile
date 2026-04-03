@@ -2,14 +2,8 @@
 
 # --------------------------------------------------------------------
 
-default: run
-
-.PHONY:
-	clean
-	test
-	check
-	format
-	valgrind
+.PHONY: run run-ref run-avx check jazz format valgrind clean
+.DEFAULT_GOAL = run
 
 run:
 	$(MAKE) -C $(TEST_DIR) run

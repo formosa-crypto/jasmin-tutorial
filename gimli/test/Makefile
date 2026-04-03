@@ -2,27 +2,27 @@
 
 # --------------------------------------------------------------------
 
-TEST_SOURCES := \
+TEST_SOURCES = \
 	main.c \
 	random.c \
 	test.c
 
-TEST_HEADERS := \
+TEST_HEADERS = \
 	random.h \
 	test.h
 
-SOURCES := $(TEST_SOURCES) $(REF_SOURCES) $(AVX_SOURCES) $(JAZZ_SOURCES) \
+SOURCES = $(TEST_SOURCES) $(REF_SOURCES) $(AVX_SOURCES) $(JAZZ_SOURCES) \
 	$(JAZZ_SOURCES_AVX)
-HEADERS := $(TEST_HEADERS) $(REF_HEADERS) $(AVX_HEADERS) $(JAZZ_HEADERS) \
+HEADERS = $(TEST_HEADERS) $(REF_HEADERS) $(AVX_HEADERS) $(JAZZ_HEADERS) \
 	$(JAZZ_HEADERS_AVX)
 
-CC := gcc
-CFLAGS := -O3 -g -Wall -Wextra -Werror -Wpedantic -Wunreachable-code \
+CC = gcc
+CFLAGS = -O3 -g -Wall -Wextra -Werror -Wpedantic -Wunreachable-code \
 	-Wshadow -march=native
-CINCLUDE := -I $(REF_DIR) -I $(AVX_DIR) -I $(JAZZ_REF) -I $(JAZZ_AVX)
-CCOMPILE := $(CC) $(CINCLUDE) $(CFLAGS)
+CINCLUDE = -I $(REF_DIR) -I $(AVX_DIR) -I $(JAZZ_REF) -I $(JAZZ_AVX)
+CCOMPILE = $(CC) $(CINCLUDE) $(CFLAGS)
 
-OUT := out.o
+OUT = test_gimli
 
 TESTN ?= 0
 
@@ -35,14 +35,8 @@ VALGRIND_FLAGS += \
 
 # --------------------------------------------------------------------
 
-.default: run-ref
-
-.PHONY:
-	clean
-	format
-	run
-	valgrind
-	all
+.PHONY: all run run-ref run-avx format valgrind clean
+.DEFAULT_GOAL = run-ref
 
 $(OUT): $(SOURCES) $(HEADERS) $(JAZZ_ASM) $(JAZZ_ASM_AVX)
 	$(CCOMPILE) $(TEST_SOURCES) $(REF_SOURCES) $(AVX_SOURCES) $(JAZZ_ASM) \
