@@ -1,0 +1,376 @@
+# Jasmin tutorial: step by step
+
+This guide walks you through the tutorial on your own. You will:
+
+1. implement the [Gimli](https://gimli.cr.yp.to/) permutation in Jasmin,
+   starting from a C reference implementation;
+2. write a vectorized (AVX2) version;
+3. check your code with the safety checker and the constant-time checkers;
+4. extract it to EasyCrypt and check a constant-time proof.
+
+You should be comfortable with C. Some familiarity with x86 assembly helps but
+is not required. The tutorial targets Jasmin 2026.09.0.
+
+Throughout, the comments in the `.jazz` files are part of the tutorial: they
+explain the Jasmin features you need right where you need them. Read them
+carefully.
+
+## 0. Setup
+
+Install the tools as explained in [README.md](README.md#setting-up-jasmin--easycrypt).
+The simplest way is Docker. From the root of the repository:
+
+```shell
+docker build --build-arg UID=$(id -u) -t jasmin-tutorial . && \
+docker run --rm -it -v "$PWD":/home/jasmin/tutorial jasmin-tutorial
+```
+
+You can edit the files on your machine with your usual editor and run the
+commands below inside the container. Check that everything is installed:
+
+```shell
+jasminc -version
+```
+
+All `make` commands below are run from the `gimli` directory:
+
+```shell
+cd gimli
+```
+
+Run the tests for the reference implementation:
+
+```shell
+make run-ref
+```
+
+The compiler prints warnings about unused variables (the functions are still
+empty), and then the first test fails:
+
+```
+Testing test_sbox1:
+ERROR:
+  sbox1(1593175061, 921000199, 2189447000)
+  C = 1374967461
+  JAZZ = 0
+FAILED
+```
+
+The test suite compares each of your Jasmin functions with the corresponding C
+function on random inputs. Tests run in the same order as the steps below and
+stop at the first failure, so you always know what to work on next.
+
+## 1. The reference implementation
+
+You will fill in `gimli/jasmin/ref/gimli.jazz`, translating
+`gimli/c/ref/gimli.c` function by function. The file
+`gimli/jasmin/ref/jazz_gimli.jazz` wraps each of your functions in an `export`
+function so it can be called from C: you don't need to modify it, but have a
+look at it.
+
+After each step, run `make run-ref`: the corresponding test should print
+`SUCCESS` and the next one should fail.
+
+### 1.1 `sbox1`: variables, operators and assignments
+
+Read the comments above `rotate` and `sbox1`, then implement
+
+```c
+uint32_t sbox1(uint32_t x, uint32_t y, uint32_t z) {
+  return x ^ (z << 1) ^ ((y & z) << 2);
+}
+```
+
+Things to keep in mind:
+
+- Each Jasmin instruction corresponds (roughly) to one assembly instruction,
+  so you must break the expression into several assignments.
+- You can only `return` variables, not expressions.
+- Prefer the `x ^= y` form: on x86, `XOR` overwrites its first operand.
+- You can declare and initialize a variable at once: `reg u32 b = z;`.
+
+### 1.2 `sbox2`: intrinsics and flags
+
+Read the comment above `sbox2`. Implement `sbox2` and use the `#XOR_32`
+intrinsic for at least one of the XORs:
+
+```jasmin
+?{}, a = #XOR_32(a, x);
+```
+
+The `?{}` collects the flags set by the instruction (here we ignore them).
+Run `jasminc -help-intrinsics` to see all the intrinsics available.
+
+### 1.3 `sbox3`
+
+Same as `sbox1`, with the formula `z ^ y ^ ((x & y) << 3)`.
+
+### 1.4 `sbox`: arrays, function calls and inlining
+
+`sbox` receives the state as a `reg ptr u32[12]`, a pointer to an array of
+twelve 32-bit words, and a column index. Read the comment above `sbox` and:
+
+- use the `rotate` function (it is `inline`: its second argument is a
+  compile-time integer);
+- call `sbox1`, `sbox2` and `sbox3`, and try inlining some of the calls with
+  `#[inline]` as done in `jazz_gimli.jazz`;
+- remember that a variable passed to a function that modifies it can no longer
+  be used by the caller, and that you must return the `state` pointer you
+  received since you modified the array.
+
+### 1.5 `small_swap` and `big_swap`
+
+Swap words of the state as in the C code. You can do it with plain loads and
+stores, or with the `#swap` operator:
+
+```jasmin
+x, state[1] = #swap(x, state[1]);
+```
+
+which compiles to the `XCHG` instruction. Try both. We will come back to this
+choice in step 4.
+
+### 1.6 `gimli`: loops
+
+Read the comment above `gimli` about `while` and `for` loops, and implement the
+24 rounds. Note that:
+
+- `for` loops are unrolled at compile time, so their bounds and iterator are
+  compile-time values (`inline int`);
+- because the loop is unrolled, `round` is known at compile time in each copy
+  of the body, so the `if (round % 4 == 0)` conditions are resolved by the
+  compiler and produce no branch in the assembly;
+- unlike C, Jasmin does not need parentheses around `round % 4` in comparisons.
+
+When `make run-ref` prints `SUCCESS` for all seven tests, the reference
+implementation is done. If you are stuck, the solution is in
+`gimli/gimli-solutions.jazz`.
+
+### 1.7 Look at the assembly
+
+Open `gimli/jasmin/ref/jazz_gimli.s` (generated by `make jazz`) and compare it
+with your Jasmin code: the correspondence is almost one-to-one, there are no
+calls left for inlined functions, and there is no loop for `gimli`.
+
+Then compile with all warnings enabled:
+
+```shell
+cd jasmin/ref && jasminc -wall jazz_gimli.jazz -o /dev/null; cd ../..
+```
+
+Among other things, `-wall` reports the *extra assignments* the compiler had to
+introduce (e.g., to move a value into the right register before a call or a
+memory access). They are not errors, but they are a hint of where your code
+does not map directly to assembly. You can compile a single function and
+everything it depends on with `-slice jazz_sbox`.
+
+## 2. The vectorized (AVX2) implementation
+
+This step requires a CPU with AVX2. You will fill in
+`gimli/jasmin/avx2/gimliv.jazz`, translating `gimli/c/avx2/gimliv.c`. The state
+is now held in three 128-bit registers `x`, `y` and `z`, each with one row of
+the state, and the four columns are processed in parallel.
+
+Start by reading the comment at the top of `gimliv.jazz`: it lists the
+intrinsics you need (`VPSLL_4u32`, `VPSRL_4u32`, `VPSHUFB`, `VPSHUFD`) and
+explains how Intel names map to Jasmin names. The
+[Intel Intrinsics Guide](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html)
+and [felixcloutier.com/x86](https://www.felixcloutier.com/x86/index.html) are
+useful references.
+
+Test with
+
+```shell
+make run-avx
+```
+
+Suggested order (the order of the tests):
+
+1. **`sboxv`**: the three sboxes on whole rows. The rotation by 24 is a byte
+   shuffle with `#VPSHUFB` and the global constant `rotate24pattern`; the other
+   rotations are two shifts and a XOR. Note that AVX instructions have a
+   separate destination, so `a = x ^ y` does not overwrite `x`.
+2. **`small_swapv`** and **`big_swapv`**: one `#VPSHUFD` each. The immediate
+   can be written element-wise, e.g., `(4u2)[2, 3, 0, 1]`.
+3. **`gimliv`**: read the comment above it about arrays being *functional*
+   (`st = state` is semantically a copy, but the compiler does it in place),
+   load the three rows from `st`, run the 24 rounds and store them back. To XOR
+   the round constant into the first word, put it in a 32-bit register and
+   zero-extend it with `(128u)`.
+
+The solution is in `gimli/gimliv-solutions.jazz`. When both versions work,
+`make run` runs all the tests, and `make valgrind` runs them under valgrind.
+
+## 3. Safety
+
+Jasmin programs must be *safe*: no out-of-bounds array accesses, no division by
+zero, no reads of uninitialized variables, and correctly aligned memory
+accesses. The compiler's correctness guarantee only applies to safe programs.
+The `jasmin-checksafety` tool checks safety automatically (it is sound but
+incomplete: it may report violations in safe programs).
+
+### 3.1 Examples
+
+Go to the `tools` directory and read `safety.jazz`. Run the checker on each
+function and compare with the output given in the comments:
+
+```shell
+cd ../tools
+jasmin-checksafety --slice=uninitialized safety.jazz
+jasmin-checksafety --slice=arithmetic safety.jazz
+jasmin-checksafety --slice=index safety.jazz
+jasmin-checksafety --slice=termination safety.jazz
+jasmin-checksafety --slice=alignment safety.jazz
+jasmin-checksafety --slice=memset --param='memset>p;n' safety.jazz
+```
+
+The `--param` option tells the checker that `p` is a pointer to a region of at
+least `n` bytes. Without it, the checker reports the memory ranges each pointer
+argument must be valid for.
+
+### 3.2 Your Gimli
+
+Run the checker on your implementation:
+
+```shell
+cd ../gimli/jasmin/ref
+jasmin-checksafety jazz_gimli.jazz
+```
+
+All functions should be safe except `jazz_sbox`:
+
+```
+*** Possible Safety Violation(s):
+  "gimli.jazz", line 41 (4-42): in_bound: state.409[column.410] (length 48 U8)
+  ...
+```
+
+(the line numbers and the numeric suffixes the compiler adds to variable names
+depend on your code).
+
+Why? `jazz_sbox` is an export function, so `column` can be any 64-bit value
+chosen by the C caller, and `state[column + 8]` may be out of bounds. This is
+not a problem in `jazz_gimli`: there, `column` comes from a `for` loop over
+`0..3`, so all accesses are in bounds. Run the checker on the AVX2 version too:
+
+```shell
+cd ../avx2 && jasmin-checksafety jazz_gimliv.jazz; cd ..
+```
+
+## 4. Constant time
+
+A program is *constant time* when its control flow and memory accesses do not
+depend on secrets. Otherwise, timing side-channels (e.g., cache attacks) can
+leak them. The `jasmin-ct` tool checks this with a type system where every
+value is either `public` or `secret`.
+
+### 4.1 Examples
+
+In `tools`, read `side_channel.jazz` and check each function:
+
+```shell
+cd ../../tools
+jasmin-ct --slice=memeq side_channel.jazz
+jasmin-ct --slice=memeq_early_abort side_channel.jazz
+jasmin-ct --slice=strlen side_channel.jazz
+jasmin-ct --slice=strlen_ct side_channel.jazz
+```
+
+`memeq` and `strlen_ct` are accepted, while `memeq_early_abort` and `strlen`
+are rejected: their loop conditions depend on secret data. Note the
+`#declassify(x);` instructions: they tell the checker that a value is public
+even though the type system thinks otherwise. The checker trusts them, so each
+must be justified.
+
+The security type of a function is given with an annotation such as
+`#[ct = "public × public → public"]`. It is mandatory for export functions; use
+`--infer` to have the checker infer it and `--print` to display it.
+
+### 4.2 Speculative constant time
+
+Modern CPUs speculatively execute code after a mispredicted branch (Spectre v1),
+which can leak secrets even from constant-time code. Jasmin protects against
+this with *selective speculative load hardening*: a misspeculation flag
+(`msf`), initialized with `#init_msf()`, updated after branches with
+`#update_msf`, and used to mask values with `#protect`. Check:
+
+```shell
+jasmin-ct --sct --slice=strlen_ct side_channel.jazz
+jasmin-ct --sct --slice=strlen_sct side_channel.jazz
+```
+
+`strlen_ct` is constant time but is rejected by the speculative checker;
+`strlen_sct` is accepted. Compare the two functions. See the
+[documentation](https://jasmin-lang.readthedocs.io/en/latest/tools/sct.html)
+for details.
+
+### 4.3 Your Gimli
+
+Go back to `gimli/jasmin/ref` and look at the types inferred for your export
+functions:
+
+```shell
+cd ../gimli/jasmin/ref
+jasmin-ct --infer --print jazz_gimli.jazz
+```
+
+You should see, e.g., `#[ct = "state × public → state"]` for `jazz_sbox`: the
+column index must be public (it is used to compute memory addresses), while the
+contents of the state can be anything. Now add explicit annotations in
+`jazz_gimli.jazz`, for instance
+
+```jasmin
+#[ct = "secret → secret"]
+export
+fn jazz_gimli(reg ptr u32[12] state) -> reg ptr u32[12] {
+```
+
+and check them with `jasmin-ct jazz_gimli.jazz`. Try annotating `jazz_sbox`
+with `"secret × secret → secret"` and read the error message.
+
+Finally, try the stricter leakage model where secrets must not be used as
+operands of instructions whose timing may depend on their operands (that is,
+instructions not on Intel's DOIT list):
+
+```shell
+jasmin-ct --doit --slice=jazz_gimli jazz_gimli.jazz
+```
+
+If you used `#swap` in step 1.5, this is rejected: `XCHG` is not a DOIT
+instruction. Rewrite the swaps with plain loads and stores, check that
+`make run-ref` still passes, and run the checker again.
+
+## 5. EasyCrypt (optional)
+
+The `jasmin2ec` tool extracts Jasmin programs into
+[EasyCrypt](https://github.com/EasyCrypt/easycrypt) models, where you can prove
+functional correctness and security properties. With the `-m CT` option, the
+extracted model also records the *leakage* of the program (branch conditions
+and memory addresses), so that constant time can be proved as an equivalence:
+two executions with the same public inputs produce the same leakage.
+
+From `gimli/proof`, extract the models and check the constant-time proof for
+the reference implementation:
+
+```shell
+cd ../../proof
+make gimli_x86_ct.ec gimli_avx_ct.ec
+easycrypt compile -I extraction gimli_ct.ec
+```
+
+Open `extraction/gimli_x86_ct.ec` to see what the extracted model looks like,
+and `gimli_ct.ec` for the statement and the proof. As an exercise, uncomment
+the AVX2 proof at the end of `gimli_ct.ec` and try to complete it.
+
+The proof of equivalence between the reference and AVX2 implementations,
+`gimli.ec`, has not been updated to Jasmin 2026.09 yet (the extraction now
+represents the state as a byte array `BArray48`), so `make check` currently
+fails on it.
+
+## Going further
+
+- Jasmin documentation: <https://jasmin-lang.readthedocs.io/>
+- Jasmin repository and changelog: <https://github.com/jasmin-lang/jasmin>
+- Libjade, a library of cryptographic primitives written in Jasmin:
+  <https://github.com/formosa-crypto/libjade>
+- `slides.pdf` in this repository: the slides from the CHES 2024 tutorial

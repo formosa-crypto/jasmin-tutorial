@@ -50,6 +50,9 @@ abstract theory BitWord.
 
 op size : {int | 0 < size} as gt0_size.
 
+lemma ge0_size : 0 <= size.
+proof. by apply ltzW; apply gt0_size. qed.
+
 clone FinType as Alphabet with
   type t    <- bool,
   op   enum <- [true; false],
@@ -62,8 +65,7 @@ clone include MonoArray with
   rename "of_list"  as "bits2w"
          "to_list"  as "w2bits"
          "^tP$"     as "wordP"
-         "sub"      as "bits"
-  proof ge0_size by (apply ltzW; apply gt0_size).
+         "sub"      as "bits".
 
 (* -------------------------------------------------------------------- *)
 abbrev modulus = 2 ^ size.
@@ -113,9 +115,12 @@ axiomatized by to_sintE.
 abbrev zero = of_int 0.
 abbrev one  = of_int 1.
 
+lemma size_w2bits' x : size (w2bits x) = size.
+proof. done. qed.
+
 lemma to_uint_cmp (x : t) : 0 <= to_uint x < modulus.
 proof.
-  by rewrite to_uintE bs2int_ge0 -(size_w2bits x) bs2int_le2Xs.
+  by rewrite to_uintE bs2int_ge0 -(size_w2bits' x) bs2int_le2Xs.
 qed.
 
 lemma to_sint_cmp (x : t) : min_sint <= to_sint x <= max_sint.
@@ -132,8 +137,8 @@ lemma to_uintK : cancel to_uint of_int.
 proof.
   move=> w; rewrite to_uintE of_intE.
   rewrite modz_small.
-  + by rewrite bs2int_ge0 ger0_norm // -(size_w2bits w) bs2int_le2Xs.
-  by rewrite -(size_w2bits w) bs2intK w2bitsK.
+  + by rewrite bs2int_ge0 ger0_norm // -(size_w2bits' w) bs2int_le2Xs.
+  by rewrite -(size_w2bits' w) bs2intK w2bitsK.
 qed.
 
 lemma to_uintK' (x: t) : of_int (to_uint x) = x.
@@ -1198,7 +1203,7 @@ move=> H; have H0: to_uint (w1 `&` w2) = 0 by smt(to_uint0).
 rewrite to_uintD_small //.
 move: H0; rewrite !to_uintE.
 rewrite andE => H0.
-apply bs2int_add_disjoint; rewrite ?size_w2bits //.
+apply bs2int_add_disjoint; rewrite ?size_w2bits ?max_size //.
 by rewrite -H0 map2_w2bits_w2bits.
 qed.
 
@@ -1371,7 +1376,7 @@ lemma shrw_shlw_disjoint k1 k2 w1 w2:
  0 <= k1 < size <= k1+k2 =>
  (w1 `>>>` k1) `&` (w2 `<<<` k2) = zero.
 proof.
-move=> *; apply/wordP => i Hi /=; rewrite Hi /= /min.
+move=> *; apply/wordP => i /= ->.
 smt(get_out).
 qed.
 
@@ -1477,6 +1482,10 @@ qed.
 op wmulhs (v1 v2: t) =
   of_int (to_sint v1 * to_sint v2 %/ modulus).
 
+(* The integer value of a double word, unsigned and signed. *)
+op wdwordu hi lo = to_uint hi * modulus + to_uint lo.
+op wdwords hi lo = to_sint hi * modulus + to_uint lo.
+
 theory ALU.
 
 op SF_of (w : t) = w.[size - 1].
@@ -1553,9 +1562,6 @@ op SUB_XX (v1 v2 : t) =
 
 op CMOVcc_XX (b:bool) (w2 w3: t) =
   if b then w2 else w3.
-
-op wdwordu hi lo = to_uint hi * modulus + to_uint lo.
-op wdwords hi lo = to_sint hi * modulus + to_uint lo.
 
 op MUL_XX (v1 v2: t) =
   let (hi,lo) = mulu v1 v2 in
@@ -1654,7 +1660,8 @@ op DEC_XX (w: t) =
     (w - of_int 1)
     (to_sint w - 1).
 
-op BT_XX (x y: t) = x.[to_uint y %% size].
+op BT_XX (x y: t) =
+  (undefined_flag, x.[to_uint y %% size], undefined_flag, undefined_flag).
 
 op LEA_XX (addr: t) = addr.
 
@@ -1701,7 +1708,7 @@ lemma DEC_XX_counter n (c:t) :
   (DEC_XX c).`4 = ((DEC_XX c).`5 = zero)) /\
   (n - to_uint c + 1 < n <=> ! (DEC_XX c).`4).
 proof.
-  move=> hc0; rewrite /DEC_XX /rflags_of_aluop_nocf_w /rflags_of_aluop_nocf /ZF_of => /=.
+  move=> hc0; rewrite /DEC_XX /rflags_of_aluop_nocf_w /ZF_of => /=.
   have -> : (c - one = zero) <=> (to_uint (c - one) = 0).
   + by split => [-> // | h]; apply (canRL _ _ _ _ to_uintK).
   have hc0': to_uint c <> 0.
@@ -1716,11 +1723,11 @@ op POPCNT_XX (v: t) =
 
 op BTR_XX (x y: t) =
   let b = to_uint y %% size in
-  (x.[b], x.[b <- false]).
+  (undefined_flag, x.[b], undefined_flag, undefined_flag, x.[b <- false]).
 
 op BTS_XX (x y: t) =
   let b = to_uint y %% size in
-  (x.[b], x.[b <- true]).
+  (undefined_flag, x.[b], undefined_flag, undefined_flag, x.[b <- true]).
 
 op PEXT_XX (v m: t) =
   let vbi = filter (fun i => m.[i]) (iota_ 0 size) in
@@ -1876,7 +1883,7 @@ theory W8.
       rflags_OF i r rc false.
 
 end SHIFT.
-end W8. export W8 W8.ALU W8.SHIFT.
+end W8. export W8.
 
 abstract theory WT.
   type t.
@@ -2136,7 +2143,7 @@ theory W16.
   proof gt0_size by done,
         size_le_256 by done.
 
-end W16. export W16 W16.ALU W16.SHIFT.
+end W16. export W16.
 
 theory W32.
   abbrev [-printing] size = 32.
@@ -2144,7 +2151,7 @@ theory W32.
   rename "_XX" as "_32"
   proof gt0_size by done,
         size_le_256 by done.
-end W32. export W32 W32.ALU W32.SHIFT.
+end W32. export W32.
 
 theory W64.
   abbrev [-printing] size = 64.
@@ -2152,7 +2159,7 @@ theory W64.
   rename "_XX" as "_64"
   proof gt0_size by done,
         size_le_256 by done.
-end W64. export W64 W64.ALU W64.SHIFT.
+end W64. export W64.
 
 theory W128.
   abbrev [-printing] size = 128.
@@ -2160,7 +2167,7 @@ theory W128.
   rename "_XX" as "_128"
   proof gt0_size by done,
         size_le_256 by done.
-end W128. export W128 W128.ALU W128.SHIFT.
+end W128. export W128.
 
 theory W256.
   abbrev [-printing] size = 256.
@@ -2168,7 +2175,7 @@ theory W256.
   rename "_XX" as "_256"
   proof gt0_size by done,
         size_le_256 by done.
-end W256. export W256 W256.ALU W256.SHIFT.
+end W256. export W256.
 
 abstract theory W_WS.
 
@@ -2178,6 +2185,9 @@ abstract theory W_WS.
   axiom gt0_r : 0 < r.
   axiom sizeBrS : sizeB = r * sizeS.
 
+  lemma ge0_size : 0 <= r.
+  proof. by smt (gt0_r). qed.
+
   clone import WT as WS with op size <- sizeS.
   clone import WT as WB with op size <- sizeB.
 
@@ -2186,7 +2196,6 @@ abstract theory W_WS.
 
     op dfl <- WS.of_int 0,
     op size <- r
-    proof ge0_size by smt (gt0_r)
     rename [type] "t" as "pack_t"
            [lemma] "tP" as "packP".
 
@@ -2341,7 +2350,7 @@ abstract theory W_WS.
     0 <= i < r =>
     nth (WS.of_int 0) (to_list w) i = w \bits'S i.
   proof.
-    move=> hi; rewrite iotaredE (nth_map 0) 1:size_iota /max 1:gt0_r 1:// nth_iota //.
+    move=> hi; rewrite iotaredE (nth_map 0) 2:nth_iota // size_iota /max gt0_r //.
   qed.
 
   lemma nth_to_list w i :
@@ -2465,7 +2474,7 @@ abstract theory W_WS.
      move=> [h0i hir];rewrite bits'S_div //.
      rewrite WB.of_uintK modz_pow2_div.
      + by rewrite sizeBrS mulzC; apply cmpW; apply mulz_cmp_r.
-     rewrite -WS.of_int_mod modz_mod_pow2 !ger0_norm /min; 1,2: smt (sizeBrS WS.gt0_size).
+     rewrite -WS.of_int_mod modz_mod_pow2 /min !ger0_norm; 1,2: smt (sizeBrS WS.gt0_size).
      have -> /= : !sizeB - sizeS * i < sizeS.
      + rewrite sizeBrS.
        have -> : r * sizeS - sizeS * i = sizeS * (r - i) by ring.

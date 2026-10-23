@@ -57,9 +57,16 @@ Using these as examples, we will see how:
 
 Attendees are expected to be familiar with the C programming language.
 
-Dependencies are installed with nix flakes.
+The tutorial targets Jasmin 2026.09.0 (see
+[the Jasmin changelog](https://github.com/jasmin-lang/jasmin/blob/main/CHANGELOG.md)).
+Dependencies can be installed with Docker or from the Formosa Debian repository
+(see below).
 
-> For more details on Jasmin, refer to the official documentation: [Jasmin Documentation](https://lyonel2017.github.io/jasmin-doc/).
+> For more details on Jasmin, refer to the official documentation: [Jasmin Documentation](https://jasmin-lang.readthedocs.io/).
+
+## Doing the tutorial
+
+Follow the step-by-step guide in [TUTORIAL.md](TUTORIAL.md).
 
 ## Contents
 
@@ -72,41 +79,61 @@ The artifact is structured as follows:
 - `gimli/test`: test framework for Jasmin implementations of Gimli
 - `gimli/proof`: Easycrypt proofs of equivalence and constant time for Jasmin
   implementations of Gimli
+- `tools`: examples for the safety checker and the (speculative) constant-time
+  checker
 
 
 ## Setting up Jasmin & Easycrypt
 
-### Using Flakes
+### Using Docker
 
-Run
-
-```shell
-$ nix develop --profile ./nix-env
-```
-
-and you will be in a shell with the dependencies installed. You can exit the
-shell with `exit`. To enter the shell afterwards (and avoid downloading all the
-dependencies again), use
+The `Dockerfile` at the root of the repository builds an image with the Jasmin
+tools (`jasminc`, `jasmin-ct`, `jasmin-checksafety`, `jasmin2ec`), EasyCrypt,
+the SMT solvers, gcc, valgrind and clang-format. From the root of the
+repository, run
 
 ```shell
-$ nix develop ./nix-env
+docker build --build-arg UID=$(id -u) -t jasmin-tutorial . && \
+docker run --rm -it -v "$PWD":/home/jasmin/tutorial jasmin-tutorial
 ```
+
+You will be in a shell inside the container with the repository mounted at
+`/home/jasmin/tutorial`, so you can edit the files with your usual editor on the
+host. You can exit the shell with `exit`.
+
+### Using the Debian packages
+
+On Debian Trixie (or a derivative), the Jasmin tools and EasyCrypt can be
+installed from the Formosa repository. Run
+
+```shell
+wget -qO- https://formosa-crypto.org/formosa-archive-keyring.pgp | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/formosa-crypto.gpg > /dev/null && \
+echo 'deb [signed-by=/etc/apt/trusted.gpg.d/formosa-crypto.gpg] https://repo.formosa-crypto.org/debian trixie main' | sudo tee /etc/apt/sources.list.d/formosa-crypto.list && \
+sudo apt update && \
+sudo apt install jasmin-compiler easycrypt libjasmin-easycrypt why3 z3 cvc5 gcc make valgrind clang-format && \
+easycrypt why3config
+```
+
+The last command registers the SMT solvers with EasyCrypt.
+Packages for Debian Bookworm and Ubuntu Noble are also available (replace
+`trixie` with `bookworm` or `noble`); EasyCrypt is packaged only for Trixie.
 
 ### Other alternatives
 
-Alternatively, you can install the dependencies yourself. You need
+Alternatively, you can install the dependencies yourself, following the
+[Jasmin installation guide](https://jasmin-lang.readthedocs.io/en/latest/misc/installation_guide.html)
+(there are opam, nix and AUR packages). You need
 - gcc
 - jasmin-compiler (see
-  [github.com/jasmin-lang/jasmin](https://github.com/jasmin-lang/jasmin), there
-  are opam and debian packages)
+  [github.com/jasmin-lang/jasmin](https://github.com/jasmin-lang/jasmin))
 - easycrypt (only if you want to use it) (see
   [github.com/EasyCrypt/easycrypt](https://github.com/EasyCrypt/easycrypt),
-  needs with why3, z3, alt-ergo, and cvc4)
+  needs why3 and the z3 and cvc5 SMT solvers)
 - clang-tools (only if you want to use it)
 - valgrind (only if you want to use it)
 
-Note that you need to use AVX2 instructions so you may have to do some extra
-configuration.
+Note that you need a CPU with AVX2 instructions to run the optimized
+implementations.
 
 ## Compiler flags
 
@@ -114,6 +141,17 @@ Here is a list of useful compiler flags:
 - `-slice [f]`: compiles only the function `[f]` and everything it depends on. This is useful when focusing on a specific function instead of compiling the entire file. It can also be used with the constant-time checker.
 - `-help-intrinsics`: lists all available intrinsic operators for the compiler version being used. This helps check which intrinsics are supported.
 - `-g`: emit DWARF2 debugging information, allowing the use of debuggers like GDB to inspect and step through the Jasmin code.
+- `-wall`: enable all warnings, including the linter (e.g., unused variables and extra assignments introduced by the compiler).
+
+Besides the compiler, the following tools are useful (run them with `--help`
+for details):
+- `jasmin-checksafety --slice=[f] file.jazz`: checks that `[f]` is safe (no
+  out-of-bounds accesses, divisions by zero, uninitialized reads, etc.); see
+  `tools/safety.jazz`. This replaces the deprecated `jasminc -checksafety`.
+- `jasmin-ct [--sct] --slice=[f] file.jazz`: checks that `[f]` is
+  (speculative) constant time; see `tools/side_channel.jazz`.
+- `jasmin2ec`: extracts EasyCrypt models from Jasmin programs; see
+  `gimli/proof/Makefile`.
 
 ## Running the artifact
 
