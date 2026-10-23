@@ -1,0 +1,36 @@
+// A direct translation of `multiply_matrices` in `matrix.c`.
+
+export
+fn multiply_matrices_jazz(reg u64 a b c n)
+{
+  reg u64 sum temp offset i j k;
+
+  i = 0;
+  while (i < n) {
+    j = 0;
+    while (j < n) {
+      sum = 0;
+      k = 0;
+      while (k < n) {
+        // sum += a[i * n + k] * b[k * n + j];
+        offset = i;
+        offset *= n;
+        offset += k;
+        temp = [a + offset * 8];
+        offset = k;
+        offset *= n;
+        offset += j;
+        temp *= [b + offset * 8];
+        sum += temp;
+        k += 1;
+      }
+      // c[i * n + j] = sum;
+      offset = i;
+      offset *= n;
+      offset += j;
+      [c + offset * 8] = sum;
+      j += 1;
+    }
+    i += 1;
+  }
+}

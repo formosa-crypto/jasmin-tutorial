@@ -1,0 +1,38 @@
+// A local function: calls to it are compiled to `call`/`ret`.
+fn bar(reg u64 a) -> reg u64 {
+  a += 2;
+  return a;
+}
+
+// An inline function: it is always inlined, so it does not exist in the
+// generated assembly.
+inline
+fn baz(reg u64 a) -> reg u64 {
+  a += 3;
+  return a;
+}
+
+export
+fn foo(reg u64 r) -> reg u64 {
+  r = bar(r);             // call
+  #[inline] r = bar(r);   // this call to `bar` is inlined
+  r = baz(r);             // always inlined
+  return r;
+}
+
+/* `jasminc -pasm calls.jazz` prints (Jasmin 2026.09.0):
+
+foo:
+        movq    %rsp, %rsi
+        andq    $-8, %rsp
+        movq    %rdi, %rax      // the argument is moved to the return register
+        call    .Lbar$1         // r = bar(r);
+.Lfoo$1:
+        addq    $2, %rax        // #[inline] r = bar(r);
+        addq    $3, %rax        // r = baz(r);
+        movq    %rsi, %rsp
+        ret
+.Lbar$1:
+        addq    $2, %rax
+        ret
+*/

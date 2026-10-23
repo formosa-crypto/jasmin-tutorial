@@ -1,0 +1,122 @@
+// Exercise: complete this function by translating `complex_sum.s` (the
+// assembly GCC generates for `register_pressure` in `complex_sum.c`) line by
+// line. The parts already translated are a guide; the TODOs are what is left.
+//
+// Remember that there is a one-to-one relation between Jasmin and assembly:
+// each line below corresponds to one line in `complex_sum.s`.
+//
+// The C ABI passes the first six arguments in rdi, rsi, rdx, rcx, r8 and r9,
+// and the result is returned in rax. Here every variable is named after the
+// register GCC uses for it, and every stack variable `mN_s` after the stack
+// slot `-N(%rsp)` it corresponds to.
+//
+// When you are done, run `make` to check your function against the C one.
+// The solution is in `complex_sum_solution.jazz`.
+
+export
+fn register_pressure_jazz(reg u64 rdi rsi rdx rcx r8 r9) -> reg u64
+{
+  reg u64 rax rbx rbp r10 r11 r12 r13 r14 r15;
+  stack u64 m8_s m16_s m24_s m32_s m40_s m48_s m56_s m64_s
+            m72_s m80_s m88_s m96_s m104_s m112_s m120_s;
+
+  // TODO 1: translate the first 14 instructions of `complex_sum.s`, from
+  // `leaq 1(%r9), %rax` to `movq %r9, %rbp`. For instance,
+  //   leaq 0(,%rdi,8), %r11   becomes   r11 = #LEA(rdi * 8);
+  //   leaq (%rsi,%rsi,2), %r14   becomes   r14 = #LEA(rsi + rsi * 2);
+  //   subq %rdi, %r11   becomes   r11 -= rdi;
+  // Beware of the operand order: AT&T syntax puts the destination last.
+  rbx = #LEA(r15 + r15);
+  r8 = #LEA(rbx + r12);
+  r14 *= r8;
+  r13 = #LEA(r10 - 4);
+  rcx = r13;
+  // TODO 2: `movq %rsi, -72(%rsp)` spills `rsi` to the stack: store it in
+  // the stack variable `m72_s`. Then translate the next two instructions.
+  rsi = rdi;
+  m8_s = rdx;
+  r11 *= rcx;
+  m112_s = rcx;
+  rcx = rdx;
+  rsi += r14;
+  m120_s = r14;
+  rdx = r15;
+  rdx -= rax;
+  m64_s = rdi;
+  rcx -= r11;
+  m56_s = r8;
+  r14 = rcx;
+  m104_s = rcx;
+  r14 *= rsi;
+  rdx -= r14;
+  m96_s = r14;
+  rbp *= rdx;
+  r14 = rdx;
+  rdx = r12;
+  rdi = #LEA(r10 + rbp);
+  m48_s = rbp;
+  rbp = r8;
+  // TODO 3: `movq -120(%rsp), %r8` reloads (unspills) the value spilled
+  // in `m120_s` into `r8`. Translate it and the next three instructions.
+  m80_s = r8;
+  r8 = m80_s;
+  rdx -= rdi;
+  rcx = rdi;
+  rdi = m112_s;
+  m32_s = rdx;
+  rdx += r13;
+  rbp *= rdx;
+  rdi *= rbp;
+  m24_s = rbp;
+  rbp = m104_s;
+  r8 -= rdi;
+  rdi = rax;
+  // TODO 4: `addq -8(%rsp), %rax` adds a value from the stack directly,
+  // without loading it into a register first. Translate it and the next
+  // instruction.
+  r8 *= rsi;
+  rax += r10;
+  rax += m72_s;
+  rax += r13;
+  rax += r9;
+  rbp *= r8;
+  rax = #LEA(rax + r12 * 2);
+  rdi -= rbp;
+  m88_s = rbp;
+  r14 *= rdi;
+  rbp = rdi;
+  rdi = r10;
+  rdi -= r14;
+  rcx *= rdi;
+  m16_s = rdi;
+  rdi = m32_s;
+  rdi += rcx;
+  rax += m112_s;
+  rax += rbx;
+  rax += r11;
+  rax += m56_s;
+  rax += m104_s;
+  rax += rsi;
+  rax += m80_s;
+  rbx = m24_s;
+  rax += m40_s;
+  rsi = #LEA(r15 + rbx);
+  rax += rdx;
+  rdx *= rdi;
+  r15 = #LEA(rsi + rsi * 2);
+  rax += r15;
+  r8 += rax;
+  rax = m96_s;
+  rax += m120_s;
+  r8 += rbp;
+  r8 += m16_s;
+  rax += m48_s;
+  rcx += r8;
+  rax += m88_s;
+  rax += r14;
+  rcx += rdi;
+  rax = #LEA(rcx + rax * 2);
+  rax -= rdx;
+
+  return rax;
+}

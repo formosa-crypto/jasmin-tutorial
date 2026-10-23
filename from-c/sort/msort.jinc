@@ -1,0 +1,123 @@
+// A translation of `sort_high_level.c`. If `avx2` is 1, the blocks are swapped
+// with `_comp_and_swap_256`, otherwise with `_comp_and_swap_64`. Since `avx2`
+// is a compile-time integer (`inline int`), the test `avx2 == 1` is resolved by
+// the compiler: each export function below contains only one of the versions.
+inline
+fn _odd_even_msort(
+  reg u64 blocks block_level_assignments lb ub,
+  inline int avx2
+)
+{
+  reg u64 n;
+  n = ub - lb;
+  if (n >= 1) {
+    reg u64 current_assignment i remaining r15 next_step;
+    reg u64 rsi_0 mask adjusted_range rax r13 rdi block_offset rdx rcx rax_3;
+    reg u64 pairs_to_process r8 r11 r10 rbx rsi left right;
+    reg bool b;
+
+    current_assignment = block_level_assignments + lb * 8;
+    i = lb;
+    remaining = n;
+    r15 = 1;
+    () = #spill(current_assignment);
+
+    while {
+      next_step = r15 * 2;
+      rsi_0 = r15;
+      rsi_0 -= 1;
+      if (r15 != 0) {
+        while {
+          mask = rsi_0;
+          mask &= r15;
+          adjusted_range = remaining;
+          adjusted_range -= r15;
+          if (mask < adjusted_range) {
+            rax = r15 * (2 * BLOCK_SIZE_BYTES);
+            () = #spill(remaining);
+            r13 = adjusted_range;
+            rdi = #LEA(r15 + r15);
+            () = #spill(rsi_0);
+            r13 -= mask;
+            () = #spill(blocks, rax);
+            block_offset = i;
+            block_offset += mask;
+            block_offset *= BLOCK_SIZE_BYTES;
+            () = #spill(block_level_assignments, i, adjusted_range);
+            rdx = block_offset + blocks;
+            block_offset = r15;
+            block_offset += i;
+            block_offset = block_level_assignments + block_offset * 8;
+            rcx = rdx;
+            () = #spill(block_offset);
+            rax_3 = r15 * BLOCK_SIZE_BYTES;
+            () = #spill(rax_3);
+
+            while {
+              pairs_to_process = r13;
+              b = r15 < r13;
+              pairs_to_process = r15 if b;
+              if (pairs_to_process != 0) {
+                () = #unspill(current_assignment);
+                () = #spill(rdi);
+                pairs_to_process += mask;
+                r8 = rcx;
+                r11 = #LEA(mask * 8);
+                () = #spill(rcx);
+                r10 = mask;
+                rbx = current_assignment;
+                () = #unspill(block_offset);
+                () = #spill(r13);
+                rbx += r11;
+                r11 += block_offset;
+                () = #unspill(rax_3);
+                rsi = rax_3;
+                rsi += rcx;
+
+                while (r10 != pairs_to_process) {
+                  left = r10;
+                  left /= next_step;
+                  // The division leaves its result in rax, and so does the
+                  // next one: copy `left` so that it can live in another
+                  // register (removing this line is a register allocation
+                  // error).
+                  left = left;
+                  right = r10;
+                  right += r15;
+                  right /= next_step;
+                  if (left == right) {
+                    if (avx2 == 1) {
+                      _comp_and_swap_256(rbx, r11, r8, rsi);
+                    } else {
+                      _comp_and_swap_64(rbx, r11, r8, rsi);
+                    }
+                  }
+                  r10 += 1;
+                  rbx += 8;
+                  r11 += 8;
+                  rsi += BLOCK_SIZE_BYTES;
+                  r8 += BLOCK_SIZE_BYTES;
+                }
+                () = #unspill(rdi);
+                () = #unspill(r13);
+                () = #unspill(rcx);
+              }
+              () = #unspill(rax);
+              mask += rdi;
+              r13 -= rdi;
+              rcx += rax;
+              () = #unspill(adjusted_range);
+            } (mask < adjusted_range)
+            () = #unspill(remaining);
+            () = #unspill(rsi_0);
+            () = #unspill(blocks);
+            () = #unspill(block_level_assignments);
+            () = #unspill(i);
+          }
+          r15 >>= 1;
+        } (r15 != 0)
+      }
+      r15 = next_step;
+    } (next_step < remaining)
+  }
+}

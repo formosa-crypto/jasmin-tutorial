@@ -1,0 +1,68 @@
+// Number of 64-bit words in a `block` (see `sort.c`): id, position and
+// BLOCK_DATA_SIZE_QWORDS = 168 words of data.
+param int BLOCK_SIZE_QWORDS = 170;
+param int BLOCK_SIZE_BYTES = 8 * BLOCK_SIZE_QWORDS;
+
+// Compares the blocks `b0` and `b1` (and their level assignments `bla0` and
+// `bla1`) as `comp_blocks` in `sort.c`, and swaps them if needed, without
+// branching. This is the code GCC generates (see `sort_high_level.c`): the
+// blocks are swapped one 64-bit word at a time.
+inline
+fn _comp_and_swap_64(
+  reg u64 rbx r11 r8 rsi  // bla0 bla1 b0 b1
+)
+{
+  reg u64 rcx_1 rax_4 r9_1 rdi_1 rdx r13_1;
+  reg u32 edi;
+  reg u8 dil al dl;
+  reg bool b;
+  inline int r;
+
+  rdx = [rbx];
+  rcx_1 = [r11];
+  rax_4 = [r8 + 8];
+
+  b = [rsi + 8] < rax_4;
+  dil = #SETcc(b);
+  b = rdx == rcx_1;
+  al = #SETcc(b);
+  al &= dil;
+  b = rdx > rcx_1;
+  dl = #SETcc(b);
+  al |= dl;
+
+  edi = (32u)al;
+  r9_1 = (64u)edi;
+  r9_1 -= 1;
+  rdi_1 = (64u)edi;
+  rdi_1 = -rdi_1;
+
+  // cond_swap_blocks
+  for r = 0 to BLOCK_SIZE_QWORDS {
+    rdx = [r8 + r * 8];
+    rcx_1 = [rsi + r * 8];
+    r13_1 = rdx;
+    rcx_1 &= rdi_1;
+    rdx &= rdi_1;
+    r13_1 &= r9_1;
+    rcx_1 |= r13_1;
+    [r8 + r * 8] = rcx_1;
+    rcx_1 = [rsi + r * 8];
+    rcx_1 &= r9_1;
+    rdx |= rcx_1;
+    [rsi + r * 8] = rdx;
+  }
+
+  // cond_obv_swap_u64
+  rax_4 = [rbx];
+  rdx = [r11];
+  rcx_1 = rax_4;
+  rdx &= rdi_1;
+  rax_4 &= rdi_1;
+  rcx_1 &= r9_1;
+  rdx |= rcx_1;
+  [rbx] = rdx;
+  r9_1 &= [r11];
+  rax_4 |= r9_1;
+  [r11] = rax_4;
+}

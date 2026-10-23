@@ -1,0 +1,91 @@
+// Odd-even merge sort, translated from `sort_high_level.c` (see the README).
+// The comparison and conditional swap of two blocks is in
+// `comp_and_swap.jinc`, the sorting network in `msort.jinc`.
+//
+// Exercise: `_comp_and_swap_64` swaps the blocks one 64-bit word at a time.
+// Complete `_comp_and_swap_256` below, which does the same with 256-bit (AVX2)
+// registers. It is used by `odd_even_msort_avx2_jazz`. Run `make run` to test
+// it and compare the running times. The solution is in `sort_solution.jazz`.
+
+require "comp_and_swap.jinc"
+
+// Same as `_comp_and_swap_64`, but the blocks are swapped four words at a time
+// using 256-bit (AVX2) registers.
+inline
+fn _comp_and_swap_256(
+  reg u64 bla0 bla1 b0 b1
+)
+{
+  reg u256 t0 t1 tmp256 mask2 mask3;
+  reg u128 r0 r1 tmp128 mask0 mask1;
+  reg u64 a b tmp cond0 cond1;
+  reg u32 edi;
+  reg u8 dil al dl;
+  inline int r;
+  reg bool cond;
+  stack u64 c0_s c1_s;  // VPBROADCAST reads its operand from memory
+
+  a = [bla0];  // block_level_assignments
+  b = [bla1];  // block_level_assignments
+  tmp = [b0 + 8]; // blocks
+
+  // comp_blocks
+  cond = [b1 + 8] < tmp;
+  dil = #SETcc(cond);
+  cond = a == b;
+  al = #SETcc(cond);
+  al &= dil;
+  cond = a > b;
+  dl = #SETcc(cond);
+  al |= dl;
+
+  edi = (32u)al;  // cond
+  cond0 = (64u)edi;
+  cond0 -= 1;
+  cond1 = (64u)edi;
+  cond1 = -cond1;
+
+  c0_s = cond0;
+  c1_s = cond1;
+  // TODO: swap the blocks `b0` and `b1` if `cond` is set, like the loop in
+  // `_comp_and_swap_64`, but four 64-bit words at a time:
+  // - broadcast the masks `c0_s` and `c1_s` to every 64-bit lane of `mask2`
+  //   and `mask3` with `#VPBROADCAST_4u64`;
+  // - load 256 bits with `t0 = [:u256 b0 + r * 32];` and store them with
+  //   `[:u256 b0 + r * 32] = t0;`;
+  // - `#VPAND_256` and `#VPOR_256` are the bitwise and/or on 256-bit registers;
+  // - a block is BLOCK_SIZE_QWORDS = 170 words, which is not a multiple of 4:
+  //   the last two words can be swapped in the same way with 128-bit
+  //   registers (`#VPBROADCAST_2u64`, `[:u128 ...]`, `#VPAND_128`,
+  //   `#VPOR_128`) or with 64-bit ones.
+
+  // cond_obv_swap_u64
+  tmp = [bla0];
+  a = [bla1];
+  b = tmp;
+  a &= cond1;
+  tmp &= cond1;
+  b &= cond0;
+  a |= b;
+  [bla0] = a;
+  cond0 &= [bla1];
+  tmp |= cond0;
+  [bla1] = tmp;
+}
+
+
+require "msort.jinc"
+
+#[ct = "public × public × public × public → ()"]
+export
+fn odd_even_msort_jazz(reg u64 blocks block_level_assignments lb ub)
+{
+  _odd_even_msort(blocks, block_level_assignments, lb, ub, 0);
+}
+
+#[ct = "public × public × public × public → ()"]
+export
+fn odd_even_msort_avx2_jazz(reg u64 blocks block_level_assignments lb ub)
+{
+  _odd_even_msort(blocks, block_level_assignments, lb, ub, 1);
+}

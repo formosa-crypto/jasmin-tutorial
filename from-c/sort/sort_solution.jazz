@@ -1,0 +1,106 @@
+// Solution of the exercise in `sort.jazz`.
+
+require "comp_and_swap.jinc"
+
+// Same as `_comp_and_swap_64`, but the blocks are swapped four words at a time
+// using 256-bit (AVX2) registers. 170 is not a multiple of 4: the last two
+// words are swapped with 128-bit registers.
+inline
+fn _comp_and_swap_256(
+  reg u64 bla0 bla1 b0 b1
+)
+{
+  reg u256 t0 t1 tmp256 mask2 mask3;
+  reg u128 r0 r1 tmp128 mask0 mask1;
+  reg u64 a b tmp cond0 cond1;
+  reg u32 edi;
+  reg u8 dil al dl;
+  inline int r;
+  reg bool cond;
+  stack u64 c0_s c1_s;  // VPBROADCAST reads its operand from memory
+
+  a = [bla0];  // block_level_assignments
+  b = [bla1];  // block_level_assignments
+  tmp = [b0 + 8]; // blocks
+
+  // comp_blocks
+  cond = [b1 + 8] < tmp;
+  dil = #SETcc(cond);
+  cond = a == b;
+  al = #SETcc(cond);
+  al &= dil;
+  cond = a > b;
+  dl = #SETcc(cond);
+  al |= dl;
+
+  edi = (32u)al;  // cond
+  cond0 = (64u)edi;
+  cond0 -= 1;
+  cond1 = (64u)edi;
+  cond1 = -cond1;
+
+  c0_s = cond0;
+  c1_s = cond1;
+  mask2 = #VPBROADCAST_4u64(c0_s);
+  mask3 = #VPBROADCAST_4u64(c1_s);
+  // cond_swap_blocks
+  for r = 0 to BLOCK_SIZE_QWORDS / 4 {
+    t0 = [:u256 b0 + r * 32];
+    t1 = [:u256 b1 + r * 32];
+    tmp256 = t0;
+    t1 = #VPAND_256(t1, mask3);
+    t0 = #VPAND_256(t0, mask3);
+    tmp256 = #VPAND_256(tmp256, mask2);
+    t1 = #VPOR_256(t1, tmp256);
+    [:u256 b0 + r * 32] = t1;
+    t1 = [:u256 b1 + r * 32];
+    t1 = #VPAND_256(t1, mask2);
+    t0 = #VPOR_256(t0, t1);
+    [:u256 b1 + r * 32] = t0;
+  }
+  mask0 = #VPBROADCAST_2u64(c0_s);
+  mask1 = #VPBROADCAST_2u64(c1_s);
+
+  r0 = [:u128 b0 + (BLOCK_SIZE_QWORDS / 4) * 32];
+  r1 = [:u128 b1 + (BLOCK_SIZE_QWORDS / 4) * 32];
+  tmp128 = r0;
+  r1 = #VPAND_128(r1, mask1);
+  r0 = #VPAND_128(r0, mask1);
+  tmp128 = #VPAND_128(tmp128, mask0);
+  r1 = #VPOR_128(r1, tmp128);
+  [:u128 b0 + (BLOCK_SIZE_QWORDS / 4) * 32] = r1;
+  r1 = [:u128 b1 + (BLOCK_SIZE_QWORDS / 4) * 32];
+  r1 = #VPAND_128(r1, mask0);
+  r0 = #VPOR_128(r0, r1);
+  [:u128 b1 + (BLOCK_SIZE_QWORDS / 4) * 32] = r0;
+
+  // cond_obv_swap_u64
+  tmp = [bla0];
+  a = [bla1];
+  b = tmp;
+  a &= cond1;
+  tmp &= cond1;
+  b &= cond0;
+  a |= b;
+  [bla0] = a;
+  cond0 &= [bla1];
+  tmp |= cond0;
+  [bla1] = tmp;
+}
+
+
+require "msort.jinc"
+
+#[ct = "public × public × public × public → ()"]
+export
+fn odd_even_msort_jazz(reg u64 blocks block_level_assignments lb ub)
+{
+  _odd_even_msort(blocks, block_level_assignments, lb, ub, 0);
+}
+
+#[ct = "public × public × public × public → ()"]
+export
+fn odd_even_msort_avx2_jazz(reg u64 blocks block_level_assignments lb ub)
+{
+  _odd_even_msort(blocks, block_level_assignments, lb, ub, 1);
+}

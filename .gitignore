@@ -3,3 +3,15 @@ gimli/jasmin/ref/jazz_gimli.s
 gimli/jasmin/avx2/jazz_gimliv.s
 gimli/proof/extraction
 gimli/test/test_gimli
+from-c/**/*_jazz.s
+from-c/spill/spillO0.s
+from-c/spill/spillO3.s
+from-c/spill/test_spill
+from-c/spill/test_complex_sum
+from-c/spill/test_complex_sum_solution
+from-c/optimization/matrixO0.s
+from-c/optimization/matrixO3.s
+from-c/optimization/test
+from-c/optimization/test_solution
+from-c/sort/test
+from-c/sort/test_solution

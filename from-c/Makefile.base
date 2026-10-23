@@ -1,0 +1,4 @@
+CC = gcc
+CFLAGS ?= -Wall -Wextra -O3
+JASMINC ?= jasminc
+JASMIN_FLAGS ?=
